@@ -599,7 +599,7 @@ a {
 }
 
 .about,
-.work {
+.personal {
   gap: 18px;
   animation: fade-up 0.35s ease-out both;
 }
@@ -696,6 +696,28 @@ a {
   margin: 0 7px;
 }
 
+/* Company names only, in the city's typeface: a list of places, not a CV. */
+.companies {
+  row-gap: 2px;
+}
+
+.company {
+  font: 900 26px/1.2 var(--font-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.company:not(:last-child)::after {
+  content: "·";
+  margin: 0 10px;
+  color: var(--red);
+}
+
+.history {
+  align-self: flex-start;
+}
+
 .umbrella {
   gap: 10px;
   margin-top: 26px;
@@ -703,7 +725,7 @@ a {
   border-left: 2px solid var(--red);
 }
 
-.code-toggle {
+.text-btn {
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
@@ -717,7 +739,7 @@ a {
   color: var(--cyan);
 }
 
-.code-toggle:hover {
+.text-btn:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -871,37 +893,6 @@ a {
   color: var(--fg-2);
 }
 
-.jobs {
-  margin-top: 4px;
-}
-
-.job {
-  gap: 4px;
-  padding: 16px 0;
-  border-top: 1px solid var(--line);
-}
-
-.job-head {
-  gap: 4px 12px;
-  align-items: baseline;
-}
-
-.job-company {
-  font: 900 24px/1 var(--font-display);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.job-role {
-  font-size: 14px;
-  color: var(--cyan);
-}
-
-.job-text {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--fg-2);
-}
 
 @media (max-width: 639px) {
   .panel-bar {

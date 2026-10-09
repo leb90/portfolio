@@ -33,12 +33,12 @@ computed LINKS = {
 computed DICT = {
   en: {
     taglines: [
-      "Software Engineer · 10 years on the web",
-      "Creator of ArtScript, a web language for AI agents",
-      "Author of Reactpify: React inside Shopify themes",
-      "Auth and access for blockchain accounts", "Canvas, physics and the odd MMORPG"
+      "Software Engineer · 10+ years building software",
+      "Creator of ArtScript, a programming language for AI agents",
+      "Author of Reactpify: React inside Shopify themes", "Systems, developer tools and auth",
+      "Canvas, physics and the odd MMORPG"
     ],
-    work: "Work",
+    projectsTab: "Projects",
     about: "About",
     email: "Email",
     language: "Language",
@@ -53,16 +53,25 @@ computed DICT = {
     source: "Source",
     close: "Close",
     opensNewTab: "(opens in a new tab)",
-    aboutRole: "Software Engineer at Globant · Creator of ArtScript and Reactpify",
-    aboutLead: "Ten years shipping for the web, from Shopify storefronts to auth for blockchain accounts. I build the product, the tooling around it and, lately, the language too.",
+    aboutRole: "Software Engineer · Creator of ArtScript and Reactpify",
+    aboutLead: "Over ten years building software for companies and their clients, from commerce platforms to authentication systems.",
     hello: "Hi, I'm Leandro.",
-    aboutMore: "I've built for OpenBank, TeleTech, Moody's ESG platform and Shopify brands at DEPT®. Today I'm at Globant, on access management for a blockchain account. I work hybrid or remote, in English and Spanish.",
+    aboutMore: "I've built for OpenBank, TeleTech, Moody's and Shopify brands, among others. I work hybrid or remote, in English and Spanish.",
+    companiesTitle: "Where I've worked",
+    history: "Full history on LinkedIn",
+    ownTitle: "On my own",
+    ownText: "Outside my work for companies, I build my own projects: two open-source tools, ArtScript and Reactpify, my Shopify store Ático de Hisui and World of Argentum, a browser game.",
+    seeProjects: "See my personal projects",
     stats: [
-      { n: "10", label: "years building for the web" },
+      { n: "10+", label: "years building software" },
       { n: "2", label: "open-source tools I created" },
       { n: "UTC−3", label: "Mar del Plata, Argentina" }
     ],
-    toolsTitle: "What I work with",
+    toolsTitle: "What I do",
+    disciplines: [
+      "System design", "Authentication and access", "Developer tooling",
+      "Languages and compilers", "Testing and CI/CD", "Technical leadership"
+    ],
     umbrellaText: "The rain beside this panel is real physics, written in ArtScript like the rest of the page.",
     showCode: "See how the umbrella catches it",
     hideCode: "Hide the code",
@@ -71,13 +80,12 @@ computed DICT = {
     copied: "Copied",
     backToRain: "Back to the rain",
     fullProfile: "Full profile",
-    workTitle: "Things I built",
-    workLead: "Open source, products and the odd game. Client code stays private; these are mine.",
-    experience: "Where I've worked",
+    workTitle: "Personal projects",
+    workLead: "What I build on my own, apart from my work for companies: open-source tools, a store and a game.",
     projects: [
       {
         name: "ArtScript",
-        role: "Creator",
+        role: "Open source",
         text: "A full-stack web language that compiles to small, dependency-free JavaScript and a Node server. Designed for AI agents: across 50 measured tasks, Claude built the same apps for up to 50% less than in React.",
         tags: ["Compiler", "Runtime", "LSP", "MCP"],
         links: [
@@ -87,7 +95,7 @@ computed DICT = {
       },
       {
         name: "Reactpify",
-        role: "Author",
+        role: "Open source",
         text: "The easiest way to add React components to any Shopify theme. Liquid sections are generated from each component's props, with Vite, Tailwind, Redux and metaobjects built in.",
         tags: ["React", "Shopify", "Liquid", "Vite"],
         links: [
@@ -98,13 +106,13 @@ computed DICT = {
       {
         name: "Ático de Hisui",
         role: "Shopify store",
-        text: "Storefront for a trading-card and collectibles shop: a custom Shopify theme with Tailwind, a catalog per game and a weekly tournament calendar.",
+        text: "My trading-card and collectibles store: a custom Shopify theme with Tailwind, a catalog per game and a weekly tournament calendar.",
         tags: ["Shopify", "Liquid", "Tailwind"],
         links: [{ label: "aticodehisui.com", href: "https://aticodehisui.com" }]
       },
       {
         name: "World of Argentum",
-        role: "Canvas game",
+        role: "Browser game",
         text: "A classic 2D fantasy MMORPG, free to play in the browser with no downloads: canvas rendering, tile maps and real-time multiplayer.",
         tags: ["Canvas", "Node.js", "Multiplayer"],
         links: [
@@ -119,53 +127,16 @@ computed DICT = {
         tags: ["Canvas 2D", "Physics", "i18n"],
         links: [{ label: "Source", href: "https://github.com/leb90/portfolio" }]
       }
-    ],
-    jobs: [
-      {
-        role: "Software Engineer",
-        company: "Globant",
-        text: "Authentication and access management for a blockchain account."
-      },
-      {
-        role: "Senior Software Engineer",
-        company: "DEPT®",
-        text: "Shopify engineering for brands in a product team."
-      },
-      {
-        role: "Full Stack Developer",
-        company: "Parser",
-        text: "Led the ESG platform for Moody's: React, Redux, AWS Lambda, DynamoDB."
-      },
-      {
-        role: "Web UI Developer",
-        company: "Leniolabs",
-        text: "Features and migrations to React; led a small team for six months."
-      },
-      {
-        role: "Web UI Developer",
-        company: "Globant",
-        text: "React apps for OpenBank and TeleTech."
-      },
-      {
-        role: "Full-stack Developer",
-        company: "GamSoft",
-        text: "Web and mobile: Node.js, PHP, AngularJS, PhoneGap."
-      },
-      {
-        role: "Developer",
-        company: "SmartAdTags · Avalith",
-        text: "A high-volume advertising API in Node.js; PHP and Laravel projects."
-      }
     ]
   },
   es: {
     taglines: [
-      "Software Engineer · 10 años en la web",
-      "Creador de ArtScript, un lenguaje web para agentes de IA",
+      "Software Engineer · más de 10 años construyendo software",
+      "Creador de ArtScript, un lenguaje de programación para agentes de IA",
       "Autor de Reactpify: React dentro de temas de Shopify",
-      "Auth y accesos para cuentas blockchain", "Canvas, física y algún que otro MMORPG"
+      "Sistemas, herramientas para developers y auth", "Canvas, física y algún que otro MMORPG"
     ],
-    work: "Proyectos",
+    projectsTab: "Proyectos",
     about: "Sobre mí",
     email: "Email",
     language: "Idioma",
@@ -180,16 +151,25 @@ computed DICT = {
     source: "Código",
     close: "Cerrar",
     opensNewTab: "(se abre en otra pestaña)",
-    aboutRole: "Software Engineer en Globant · Creador de ArtScript y Reactpify",
-    aboutLead: "Diez años construyendo para la web, desde tiendas Shopify hasta auth para cuentas blockchain. Hago el producto, las herramientas alrededor y, últimamente, también el lenguaje.",
+    aboutRole: "Software Engineer · Creador de ArtScript y Reactpify",
+    aboutLead: "Más de diez años construyendo software para empresas y sus clientes, desde plataformas de comercio hasta sistemas de autenticación.",
     hello: "Hola, soy Leandro.",
-    aboutMore: "Construí para OpenBank, TeleTech, la plataforma ESG de Moody's y marcas en Shopify desde DEPT®. Hoy estoy en Globant, en gestión de accesos para una cuenta blockchain. Trabajo híbrido o remoto, en inglés y en español.",
+    aboutMore: "Construí para OpenBank, TeleTech, Moody's y marcas en Shopify, entre otros. Trabajo híbrido o remoto, en inglés y en español.",
+    companiesTitle: "Dónde trabajé",
+    history: "Historial completo en LinkedIn",
+    ownTitle: "Por mi cuenta",
+    ownText: "Aparte de mi trabajo en empresas, hago proyectos propios: dos herramientas open source, ArtScript y Reactpify, mi tienda en Shopify Ático de Hisui y World of Argentum, un juego en el navegador.",
+    seeProjects: "Ver mis proyectos personales",
     stats: [
-      { n: "10", label: "años construyendo para la web" },
+      { n: "10+", label: "años construyendo software" },
       { n: "2", label: "herramientas open source que creé" },
       { n: "UTC−3", label: "Mar del Plata, Argentina" }
     ],
-    toolsTitle: "Con qué trabajo",
+    toolsTitle: "Qué hago",
+    disciplines: [
+      "Diseño de sistemas", "Autenticación y accesos", "Herramientas para developers",
+      "Lenguajes y compiladores", "Testing y CI/CD", "Liderazgo técnico"
+    ],
     umbrellaText: "La lluvia al lado de este panel es física de verdad, escrita en ArtScript como el resto de la página.",
     showCode: "Mirá cómo la ataja el paraguas",
     hideCode: "Ocultar el código",
@@ -198,13 +178,12 @@ computed DICT = {
     copied: "Copiado",
     backToRain: "Volver a la lluvia",
     fullProfile: "Perfil completo",
-    workTitle: "Cosas que construí",
-    workLead: "Open source, productos y algún juego. El código de clientes es privado; estos son míos.",
-    experience: "Dónde trabajé",
+    workTitle: "Proyectos personales",
+    workLead: "Lo que hago por mi cuenta, aparte de mi trabajo en empresas: herramientas open source, una tienda y un juego.",
     projects: [
       {
         name: "ArtScript",
-        role: "Creador",
+        role: "Open source",
         text: "Un lenguaje web full stack que compila a JavaScript chico y sin dependencias, más un servidor Node. Pensado para agentes de IA: en 50 tareas medidas, Claude hizo las mismas apps hasta un 50% más barato que en React.",
         tags: ["Compilador", "Runtime", "LSP", "MCP"],
         links: [
@@ -214,7 +193,7 @@ computed DICT = {
       },
       {
         name: "Reactpify",
-        role: "Autor",
+        role: "Open source",
         text: "La forma más simple de sumar componentes React a cualquier tema de Shopify. Las secciones Liquid se generan a partir de las props de cada componente, con Vite, Tailwind, Redux y metaobjects incluidos.",
         tags: ["React", "Shopify", "Liquid", "Vite"],
         links: [
@@ -225,13 +204,13 @@ computed DICT = {
       {
         name: "Ático de Hisui",
         role: "Tienda Shopify",
-        text: "La tienda de un local de cartas coleccionables: un tema de Shopify a medida con Tailwind, catálogo por juego y calendario semanal de torneos.",
+        text: "Mi tienda de cartas coleccionables: un tema de Shopify a medida con Tailwind, catálogo por juego y calendario semanal de torneos.",
         tags: ["Shopify", "Liquid", "Tailwind"],
         links: [{ label: "aticodehisui.com", href: "https://aticodehisui.com" }]
       },
       {
         name: "World of Argentum",
-        role: "Juego en canvas",
+        role: "Juego en el navegador",
         text: "Un MMORPG 2D de fantasía clásico, gratis en el navegador y sin descargas: render en canvas, mapas de tiles y multijugador en tiempo real.",
         tags: ["Canvas", "Node.js", "Multijugador"],
         links: [
@@ -245,43 +224,6 @@ computed DICT = {
         text: "Lluvia que choca contra un raster de las letras, salpica con restitución y resbala por un paraguas que podés agarrar. Sin framework ni librería de física: cada línea es ArtScript.",
         tags: ["Canvas 2D", "Física", "i18n"],
         links: [{ label: "Código", href: "https://github.com/leb90/portfolio" }]
-      }
-    ],
-    jobs: [
-      {
-        role: "Software Engineer",
-        company: "Globant",
-        text: "Autenticación y gestión de accesos para una cuenta blockchain."
-      },
-      {
-        role: "Senior Software Engineer",
-        company: "DEPT®",
-        text: "Ingeniería Shopify para marcas, dentro de un equipo de producto."
-      },
-      {
-        role: "Full Stack Developer",
-        company: "Parser",
-        text: "Lideré la plataforma ESG de Moody's: React, Redux, AWS Lambda, DynamoDB."
-      },
-      {
-        role: "Web UI Developer",
-        company: "Leniolabs",
-        text: "Features y migraciones a React; lideré un equipo chico durante seis meses."
-      },
-      {
-        role: "Web UI Developer",
-        company: "Globant",
-        text: "Apps React para OpenBank y TeleTech."
-      },
-      {
-        role: "Full-stack Developer",
-        company: "GamSoft",
-        text: "Web y mobile: Node.js, PHP, AngularJS, PhoneGap."
-      },
-      {
-        role: "Developer",
-        company: "SmartAdTags · Avalith",
-        text: "Una API de publicidad de alto volumen en Node.js; proyectos en PHP y Laravel."
       }
     ]
   }

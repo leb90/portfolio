@@ -1,41 +1,38 @@
 # Leandro Bisceglie
 
-> Software Engineer with 10 years building for the web. Creator of ArtScript (a full-stack web language for AI agents) and Reactpify (React components in any Shopify theme). Currently at Globant, working on authentication and access management for a blockchain account. Mar del Plata, Argentina (UTC−3), hybrid or remote.
+> Software Engineer with 10+ years building software for companies and their clients. On his own, he created ArtScript (a programming language for AI agents) and Reactpify (React components in any Shopify theme). Mar del Plata, Argentina (UTC−3), hybrid or remote.
 
 ## Facts
 
 - Name: Leandro Bisceglie
-- Title: Software Engineer at Globant
-- Experience: 10 years building for the web
+- Title: Software Engineer
+- Experience: 10+ years building software
 - Location: Mar del Plata, Buenos Aires, Argentina (UTC−3); hybrid or remote
 - Languages: Spanish (native), English (professional; EF SET Proficient)
 - Contact: leandro.bisceglie@gmail.com, https://www.linkedin.com/in/leandro-bisceglie-06bb22113/
 - GitHub: https://github.com/leb90
 
-## Built
+## Work for companies
 
-- ArtScript (creator): a full-stack web language that compiles to small, dependency-free JavaScript plus a Node server, designed for AI agents. https://artscript.dev · https://github.com/leb90/ArtScript
-- Reactpify (author): the easiest way to add React components to any Shopify theme, with Liquid sections generated from component props; Vite, Tailwind, Redux and metaobjects. https://github.com/leb90/reactpify
-- Ático de Hisui: Shopify storefront for a trading-card and collectibles shop, with a custom theme. https://aticodehisui.com
+- Companies: Avalith, DEPT®, GamSoft, Globant, Leniolabs, Parser, SmartAdTags.
+- Built for clients such as OpenBank, TeleTech, Moody's and Shopify brands.
+- Full work history: https://www.linkedin.com/in/leandro-bisceglie-06bb22113/
+
+## Personal projects
+
+Built on his own, separate from his work for companies.
+
+- ArtScript (creator, open source): a full-stack web language that compiles to small, dependency-free JavaScript plus a Node server, designed for AI agents. https://artscript.dev · https://github.com/leb90/ArtScript
+- Reactpify (author, open source): the easiest way to add React components to any Shopify theme, with Liquid sections generated from component props; Vite, Tailwind, Redux and metaobjects. https://github.com/leb90/reactpify · https://www.npmjs.com/package/reactpifyjs
+- Ático de Hisui: his own trading-card and collectibles store, on a custom Shopify theme with Tailwind. https://aticodehisui.com
 - World of Argentum: a classic 2D fantasy MMORPG in the browser, rendered on canvas. https://worldofargentum.io
 - This site: rain physics on canvas (collisions against a raster of the letters, splashes with restitution, an umbrella you can hold), written entirely in ArtScript. https://github.com/leb90/portfolio
 
-## Experience
-
-- Globant — Software Engineer: authentication and access management features for a blockchain account; scalable auth solutions integrated with existing services.
-- DEPT® — Senior Software Engineer: Shopify-focused engineering in a product team.
-- Parser — Full Stack Developer: led development of an ESG platform for Moody's with React, Redux, AWS Lambda, DynamoDB and Node.js.
-- Leniolabs — Web UI Developer: features, UI components and migrations to React; led a small team for about six months.
-- Globant — Web UI Developer: React apps for OpenBank and TeleTech.
-- GamSoft — Full-stack Developer: web and mobile with Node.js, PHP, AngularJS and PhoneGap.
-- SmartAdTags — JavaScript Developer: backend for a high-volume advertising API (Node.js, MySQL, microservices).
-- Avalith — Web Developer: PHP, Laravel, WordPress and JavaScript projects.
-
 ## Skills
 
-- Frontend: React, Redux, TypeScript, JavaScript, HTML5, CSS/SASS, Canvas 2D
-- Backend: Node.js, GraphQL, MySQL, DynamoDB, AWS Lambda
-- CMS and commerce: WordPress, Shopify, AEM
-- Platforms: Vercel, Netlify, AWS, GCP, GitHub Actions, Terraform
-- Testing and practices: Jest, Cypress, Storybook, TDD, unit testing, Agile, pair programming
-- Other: authentication and authorization, access management, developer tooling, language and compiler design
+- Engineering: system design, authentication and authorization, access management, developer tooling, language and compiler design, technical leadership
+- Languages and runtimes: TypeScript, JavaScript, Node.js, PHP
+- Applications: React, Redux, GraphQL, Canvas 2D
+- Data and cloud: AWS (Lambda, DynamoDB), GCP, MySQL, Terraform, GitHub Actions, Vercel, Netlify
+- Commerce and CMS: Shopify, WordPress, AEM
+- Quality and practices: Jest, Cypress, Storybook, TDD, unit testing, code review, Agile, pair programming

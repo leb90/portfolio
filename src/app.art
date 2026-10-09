@@ -2,7 +2,7 @@
 // tagline, the links and two sheets (About and Work). Texts live in i18n.art.
 state panelOpen = false
 
-// Which tab of the panel shows: "about" or "work".
+// Which tab of the panel shows: "about" or "projects".
 state panel = "about"
 
 computed SNIPPET = "// scene.art: a raindrop against the umbrella's canopy (an ellipse)\nlet lx = dx * ca + dy * sa\nlet ly = -dx * sa + dy * ca\nlet f = lx * lx / (R * R) + ly * ly / (ry * ry)\nif ly > R * 0.04 || f > 1 {\n  return 0\n}\n// outward normal of the ellipse, rotated back to the screen\nlet nx = (nlx * ca - nly * sa) / nl\nlet ny = (nlx * sa + nly * ca) / nl\nif isRain {\n  splash(p.x, p.y, p.vx, p.vy, nx, ny, u.vx, u.vy, 0.22, dripFloor())\n  u.wet += 1\n  return 1\n}"
@@ -23,7 +23,7 @@ page Home "/" {
     document.documentElement.lang = lang
   }
 
-  meta title="Leandro Bisceglie · Software Engineer · Creator of ArtScript" description="Software Engineer with 10 years building for the web. Creator of ArtScript and Reactpify. React, Node.js, Shopify, WordPress and AEM. Mar del Plata, Argentina."
+  meta title="Leandro Bisceglie · Software Engineer · Creator of ArtScript" description="Software Engineer with 10+ years building software. Creator of ArtScript and Reactpify. TypeScript, Node.js, React, AWS and Shopify. Mar del Plata, Argentina."
   column class="stage" tag=main {
     title "Leandro Bisceglie" tag=h1 class="sr-only"
     text t("aboutRole") tag=p class="sr-only"
@@ -99,9 +99,9 @@ component NavLinks {
       icon "mail" size=17
       text t("email") class="navlink-label"
     }
-    button class="navlink" style="--accent: #6ee7b7" aria-haspopup="dialog" aria-expanded=(panelOpen && panel == "work") -> openPanel("work") {
+    button class="navlink" style="--accent: #6ee7b7" aria-haspopup="dialog" aria-expanded=(panelOpen && panel == "projects") -> openPanel("projects") {
       icon "grid" size=17
-      text t("work") class="navlink-label"
+      text t("projectsTab") class="navlink-label"
     }
     button class="navlink" style="--accent: #ff4d5e" aria-haspopup="dialog" aria-expanded=(panelOpen && panel == "about") -> openPanel("about") {
       icon "user" size=17
@@ -149,12 +149,15 @@ fn openPanel(which) {
   panelOpen = true
 }
 
+// In alphabetical order: a list of places, not a timeline.
+computed COMPANIES = ["Avalith", "DEPT®", "GamSoft", "Globant", "Leniolabs", "Parser", "SmartAdTags"]
+
 computed TOOLS = [
-  "React", "Redux", "TypeScript", "Node.js", "GraphQL", "WordPress", "Shopify", "AEM", "Vercel",
-  "Netlify", "AWS", "GCP", "Storybook", "Jest", "Cypress", "GitHub Actions", "Terraform"
+  "TypeScript", "JavaScript", "Node.js", "React", "GraphQL", "AWS", "GCP", "DynamoDB", "MySQL",
+  "Terraform", "GitHub Actions", "Shopify", "WordPress", "AEM", "Jest", "Cypress", "Storybook"
 ]
 
-// About and Work share one panel that slides in from the right: the city keeps raining beside it,
+// About and Projects share one panel that slides in from the right: the city keeps raining beside it,
 // and the tabs switch between them without closing it.
 component Panel {
   ref body
@@ -164,9 +167,9 @@ component Panel {
     }
   }
 
-  modal panelOpen class="panel" aria-label=(panel == "about" ? t("about") : t("work")) {
+  modal panelOpen class="panel" aria-label=(panel == "about" ? t("about") : t("projectsTab")) {
     row class="panel-bar" justify=between {
-      tabs panel options=[{ value: "about", label: t("about") }, { value: "work", label: t("work") }] class="panel-tabs"
+      tabs panel options=[{ value: "about", label: t("about") }, { value: "projects", label: t("projectsTab") }] class="panel-tabs"
       button class="panel-close" aria-label=t("close") -> panelOpen = false {
         text t("backToRain") class="panel-close-text"
         icon "x" size=18
@@ -176,7 +179,7 @@ component Panel {
       if panel == "about" {
         About
       } else {
-        Work
+        Projects
       }
     }
   }
@@ -210,13 +213,34 @@ component About {
     }
     title t("toolsTitle") tag=h3 class="panel-h3"
     row class="tools" wrap {
+      for d in t("disciplines") {
+        text d class="tool"
+      }
+    }
+    row class="tools small" wrap {
       for x in TOOLS {
         text x class="tool"
       }
     }
+    title t("companiesTitle") tag=h3 class="panel-h3"
+    row class="companies" wrap {
+      for c in COMPANIES {
+        text c class="company"
+      }
+    }
+    link href=LINKS.linkedin target="_blank" class="out history" aria-label=`${t("history")} ${t("opensNewTab")}` {
+      text t("history")
+      icon "arrow-right" size=14
+    }
+    title t("ownTitle") tag=h3 class="panel-h3"
+    text t("ownText") tag=p class="about-text"
+    button class="text-btn" -> panel = "projects" {
+      text t("seeProjects")
+      icon "arrow-right" size=16
+    }
     column class="umbrella" {
       text t("umbrellaText") tag=p class="about-text"
-      button class="code-toggle" aria-expanded=peek -> peek = !peek {
+      button class="text-btn" aria-expanded=peek -> peek = !peek {
         text peek ? t("hideCode") : t("showCode")
         icon "chevron-down" size=16 class=(peek ? "chev open" : "chev")
       }
@@ -255,8 +279,8 @@ component About {
   }
 }
 
-component Work {
-  column class="work" {
+component Projects {
+  column class="personal" {
     title t("workTitle") tag=h2 class="panel-title"
     text t("workLead") tag=p class="panel-kicker"
     column class="projects" {
@@ -283,18 +307,6 @@ component Work {
         }
       }
     }
-    title t("experience") tag=h3 class="panel-h3"
-    column class="jobs" {
-      for j in t("jobs") {
-        column class="job" {
-          row class="job-head" wrap {
-            text j.company class="job-company"
-            text j.role class="job-role"
-          }
-          text j.text tag=p class="job-text"
-        }
-      }
-    }
   }
 }
 
@@ -302,17 +314,17 @@ test "shows the name and opens About" {
   open "/"
   see "Leandro Bisceglie"
   click "About"
-  see "Ten years shipping for the web"
+  see "Over ten years building software"
   see "WordPress"
   see "Let's talk"
 }
 
-test "switches between About and Work inside the panel" {
+test "switches between About and Projects inside the panel" {
   open "/"
   click "About"
   see "Hi, I'm Leandro."
-  click "Work" 1
-  see "Things I built"
+  click "Projects" 1
+  see "Personal projects"
   notSee "Hi, I'm Leandro."
 }
 
@@ -321,14 +333,19 @@ test "switches to Spanish" {
   click "ES"
   see "Sobre mí"
   click "Sobre mí"
-  see "Diez años construyendo para la web"
+  see "Más de diez años construyendo software"
 }
 
-test "lists the projects and the experience" {
+test "keeps personal projects apart from company work" {
   open "/"
-  click "Work"
+  click "Projects"
   see "Reactpify"
   see "World of Argentum"
+  notSee "Leniolabs"
+  see "Ático de Hisui"
+  click "About" 1
   see "Leniolabs"
-  notSee "2019 — 2021"
+  see "Full history on LinkedIn"
+  click "See my personal projects"
+  see "Personal projects"
 }

@@ -19,7 +19,7 @@ It's written in [ArtScript](https://artscript.dev), the web language I created. 
 | File | What's in it |
 |---|---|
 | [`src/scene.art`](src/scene.art) | The canvas: city, rain, splashes, umbrella, input |
-| [`src/app.art`](src/app.art) | The page, links, tagline, the About and Work panel, tests |
+| [`src/app.art`](src/app.art) | The page, links, tagline, the About and Projects panel, tests |
 | [`src/i18n.art`](src/i18n.art) | Every string in English and Spanish, and the links |
 | [`src/styles.css`](src/styles.css) | Styles and the self-hosted fonts |
 | [`public/llms.txt`](public/llms.txt) | A plain-text profile for people and AI agents |
