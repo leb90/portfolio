@@ -1,8 +1,9 @@
 // Leandro Bisceglie's portfolio. The page is one screen: the rain city (scene.art), a rotating
 // tagline, the links and two sheets (About and Work). Texts live in i18n.art.
-state aboutOpen = false
+state panelOpen = false
 
-state workOpen = false
+// Which tab of the panel shows: "about" or "work".
+state panel = "about"
 
 computed SNIPPET = "// scene.art: a raindrop against the umbrella's canopy (an ellipse)\nlet lx = dx * ca + dy * sa\nlet ly = -dx * sa + dy * ca\nlet f = lx * lx / (R * R) + ly * ly / (ry * ry)\nif ly > R * 0.04 || f > 1 {\n  return 0\n}\n// outward normal of the ellipse, rotated back to the screen\nlet nx = (nlx * ca - nly * sa) / nl\nlet ny = (nlx * sa + nly * ca) / nl\nif isRain {\n  splash(p.x, p.y, p.vx, p.vy, nx, ny, u.vx, u.vy, 0.22, dripFloor())\n  u.wet += 1\n  return 1\n}"
 
@@ -35,8 +36,7 @@ page Home "/" {
     Chip
     Credit
   }
-  AboutModal
-  WorkModal
+  Panel
 }
 
 component Tagline {
@@ -99,11 +99,11 @@ component NavLinks {
       icon "mail" size=17
       text t("email") class="navlink-label"
     }
-    button class="navlink" style="--accent: #6ee7b7" aria-haspopup="dialog" aria-expanded=workOpen -> workOpen = true {
+    button class="navlink" style="--accent: #6ee7b7" aria-haspopup="dialog" aria-expanded=(panelOpen && panel == "work") -> openPanel("work") {
       icon "grid" size=17
       text t("work") class="navlink-label"
     }
-    button class="navlink" style="--accent: #ff4d5e" aria-haspopup="dialog" aria-expanded=aboutOpen -> aboutOpen = true {
+    button class="navlink" style="--accent: #ff4d5e" aria-haspopup="dialog" aria-expanded=(panelOpen && panel == "about") -> openPanel("about") {
       icon "user" size=17
       text t("about") class="navlink-label"
     }
@@ -144,134 +144,154 @@ component Credit {
   }
 }
 
-component Dots {
-  row class="dots" aria-hidden="true" {
-    text "" class="dot dot-1"
-    text "" class="dot dot-2"
-    text "" class="dot dot-3"
+fn openPanel(which) {
+  panel = which
+  panelOpen = true
+}
+
+computed TOOLS = [
+  "React", "Redux", "TypeScript", "Node.js", "GraphQL", "WordPress", "Shopify", "AEM", "Vercel",
+  "Netlify", "AWS", "GCP", "Storybook", "Jest", "Cypress", "GitHub Actions", "Terraform"
+]
+
+// About and Work share one panel that slides in from the right: the city keeps raining beside it,
+// and the tabs switch between them without closing it.
+component Panel {
+  ref body
+  effect {
+    if panel && body {
+      body.scrollTop = 0
+    }
+  }
+
+  modal panelOpen class="panel" aria-label=(panel == "about" ? t("about") : t("work")) {
+    row class="panel-bar" justify=between {
+      tabs panel options=[{ value: "about", label: t("about") }, { value: "work", label: t("work") }] class="panel-tabs"
+      button class="panel-close" aria-label=t("close") -> panelOpen = false {
+        text t("backToRain") class="panel-close-text"
+        icon "x" size=18
+      }
+    }
+    column ref=body class="panel-body" {
+      if panel == "about" {
+        About
+      } else {
+        Work
+      }
+    }
   }
 }
 
-component AboutModal {
+component About {
   state peek = false
+  state copied = false
+  // "Copied" only once the browser has the address (it can refuse: no focus, no permission).
+  fn copyEmail() {
+    try {
+      await navigator.clipboard.writeText(LINKS.address)
+      copied = true
+      setTimeout(() => copied = false, 1800)
+    } catch (e) {
+    }
+  }
 
-  modal aboutOpen class="sheet" aria-labelledby="about-title" {
-    row class="sheet-head" justify=between align=start {
-      column {
-        row class="eyebrow" {
-          Dots
-          text t("about")
+  column class="about" {
+    title t("hello") tag=h2 class="panel-title"
+    text t("aboutRole") tag=p class="panel-kicker"
+    text t("aboutLead") tag=p class="about-lead"
+    text t("aboutMore") tag=p class="about-text"
+    grid class="stats" cols=3 {
+      for s in t("stats") {
+        column class="stat" {
+          text s.n class="stat-n"
+          text s.label class="stat-label"
         }
-        title "Leandro Bisceglie" tag=h2 id="about-title" class="sheet-title"
-        text t("aboutRole") tag=p class="sheet-sub"
-      }
-      button class="icon-btn" aria-label=t("close") -> aboutOpen = false {
-        icon "x" size=20
       }
     }
-    grid class="sheet-body about-body" {
-      column {
-        text t("aboutLead") tag=p class="lead"
-        row class="chips" wrap role="list" aria-label="What I do" {
-          for c in t("aboutChips") {
-            text c class="chip-tag" role="listitem"
-          }
-        }
-        column class="peek" {
-          button class="peek-btn" aria-expanded=peek -> peek = !peek {
-            text "</>" class="peek-icon" aria-hidden="true"
-            column class="peek-text" {
-              text t("peek") class="peek-title"
-              text t("peekSub") class="peek-sub"
-            }
-            icon "chevron-down" class=(peek ? "chev open" : "chev")
-          }
-          if peek {
-            text SNIPPET tag=p class="code"
-          }
-        }
-      }
-      grid class="facts" {
-        text t("stack") class="fact-key"
-        text t("stackValue") class="fact-value"
-        text t("built") class="fact-key"
-        text t("builtValue") class="fact-value"
-        text t("clients") class="fact-key"
-        text t("clientsValue") class="fact-value"
-        text t("works") class="fact-key"
-        text t("worksValue") class="fact-value"
+    title t("toolsTitle") tag=h3 class="panel-h3"
+    row class="tools" wrap {
+      for x in TOOLS {
+        text x class="tool"
       }
     }
-    row class="sheet-foot" wrap {
-      link href=LINKS.mailHello class="btn-primary" {
-        icon "mail" size=16
-        text "Email"
+    column class="umbrella" {
+      text t("umbrellaText") tag=p class="about-text"
+      button class="code-toggle" aria-expanded=peek -> peek = !peek {
+        text peek ? t("hideCode") : t("showCode")
+        icon "chevron-down" size=16 class=(peek ? "chev open" : "chev")
       }
-      link href=LINKS.linkedin target="_blank" class="btn-link" aria-label=`LinkedIn ${t("opensNewTab")}` {
-        text "LinkedIn"
-        icon "external-link" size=14
+      if peek {
+        text SNIPPET tag=pre class="code"
       }
-      link href=LINKS.github target="_blank" class="btn-link" aria-label=`GitHub ${t("opensNewTab")}` {
-        text "GitHub"
-        icon "external-link" size=14
+    }
+    column class="contact" {
+      title t("talk") tag=h3 class="panel-h3"
+      row class="mail" wrap {
+        link LINKS.address href=LINKS.mailHello class="mail-link"
+        button class=(copied ? "copy done" : "copy") -> copyEmail() {
+          if copied {
+            icon "check" size=14
+          } else {
+            icon "copy" size=14
+          }
+          text copied ? t("copied") : t("copy")
+        }
       }
-      link href="llms.txt" target="_blank" class="btn-link push" {
-        text t("fullProfile")
+      row class="elsewhere" wrap {
+        link href=LINKS.linkedin target="_blank" class="out" aria-label=`LinkedIn ${t("opensNewTab")}` {
+          text "LinkedIn"
+          icon "arrow-right" size=14
+        }
+        link href=LINKS.github target="_blank" class="out" aria-label=`GitHub ${t("opensNewTab")}` {
+          text "GitHub"
+          icon "arrow-right" size=14
+        }
+        link href="llms.txt" target="_blank" class="out" {
+          text t("fullProfile")
+          icon "arrow-right" size=14
+        }
       }
     }
   }
 }
 
-component WorkModal {
-  modal workOpen class="sheet sheet-wide" aria-labelledby="work-title" {
-    row class="sheet-head" justify=between align=start {
-      column {
-        row class="eyebrow" {
-          Dots
-          text t("work")
+component Work {
+  column class="work" {
+    title t("workTitle") tag=h2 class="panel-title"
+    text t("workLead") tag=p class="panel-kicker"
+    column class="projects" {
+      for p in t("projects") {
+        column class="project" tag=article {
+          row class="project-head" justify=between align=end wrap {
+            title p.name tag=h3 class="project-name"
+            text p.role class="project-role"
+          }
+          text p.text tag=p class="project-text"
+          row class="tools small" wrap {
+            for tg in p.tags {
+              text tg class="tool"
+            }
+          }
+          row class="project-links" wrap {
+            for l in p.links {
+              link href=l.href target="_blank" class="out" {
+                text l.label
+                icon "arrow-right" size=14
+              }
+            }
+          }
         }
-        title t("workTitle") tag=h2 id="work-title" class="sheet-title"
-        text t("workLead") tag=p class="sheet-sub"
-      }
-      button class="icon-btn" aria-label=t("close") -> workOpen = false {
-        icon "x" size=20
       }
     }
-    column class="sheet-body work-body" {
-      grid class="projects" cols=1 md:cols=2 {
-        for p in t("projects") {
-          column class="project" tag=article {
-            row class="project-head" justify=between {
-              title p.name tag=h3 class="project-name"
-              text p.role class="project-role"
-            }
-            text p.text tag=p class="project-text"
-            row class="tags" wrap {
-              for tg in p.tags {
-                text tg class="tag"
-              }
-            }
-            row class="project-links" wrap {
-              for l in p.links {
-                link href=l.href target="_blank" class="btn-link" {
-                  text l.label
-                  icon "external-link" size=14
-                }
-              }
-            }
+    title t("experience") tag=h3 class="panel-h3"
+    column class="jobs" {
+      for j in t("jobs") {
+        column class="job" {
+          row class="job-head" wrap {
+            text j.company class="job-company"
+            text j.role class="job-role"
           }
-        }
-      }
-      title t("experience") tag=h3 class="section-label"
-      column class="timeline" {
-        for j in t("jobs") {
-          column class="job" {
-            row class="job-head" wrap {
-              text j.role class="job-role"
-              text j.company class="job-company"
-            }
-            text j.text tag=p class="job-text"
-          }
+          text j.text tag=p class="job-text"
         }
       }
     }
@@ -283,7 +303,17 @@ test "shows the name and opens About" {
   see "Leandro Bisceglie"
   click "About"
   see "Ten years shipping for the web"
-  see "WordPress, Shopify, AEM"
+  see "WordPress"
+  see "Let's talk"
+}
+
+test "switches between About and Work inside the panel" {
+  open "/"
+  click "About"
+  see "Hi, I'm Leandro."
+  click "Work" 1
+  see "Things I built"
+  notSee "Hi, I'm Leandro."
 }
 
 test "switches to Spanish" {
