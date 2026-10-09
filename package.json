@@ -12,7 +12,7 @@
     "build:pages": "art build --prerender --base /portfolio --site https://leb90.github.io/portfolio"
   },
   "devDependencies": {
-    "@artscript/core": "^0.2.0",
+    "@artscript/core": "^0.2.9",
     "@happy-dom/global-registrator": "^20.14.6"
   },
   "description": "Leandro Bisceglie's portfolio, written in ArtScript: a rainy city made of the letters of my name.",

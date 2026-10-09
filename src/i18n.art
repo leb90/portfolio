@@ -14,7 +14,7 @@ fn setLang(next) {
   }
 }
 
-let LINKS = {
+computed LINKS = {
   linkedin: "https://www.linkedin.com/in/leandro-bisceglie-06bb22113/",
   github: "https://github.com/leb90",
   email: "mailto:leandro.bisceglie@gmail.com",
@@ -29,14 +29,13 @@ let LINKS = {
   source: "https://github.com/leb90/portfolio"
 }
 
-let DICT = {
+computed DICT = {
   en: {
     taglines: [
       "Software Engineer · 10 years on the web",
       "Creator of ArtScript, a web language for AI agents",
       "Author of Reactpify: React inside Shopify themes",
-      "Auth and access for blockchain accounts",
-      "Canvas, physics and the odd MMORPG"
+      "Auth and access for blockchain accounts", "Canvas, physics and the odd MMORPG"
     ],
     work: "Work",
     about: "About",
@@ -55,7 +54,10 @@ let DICT = {
     opensNewTab: "(opens in a new tab)",
     aboutRole: "Software Engineer at Globant · Creator of ArtScript and Reactpify",
     aboutLead: "Ten years shipping for the web, from Shopify storefronts to auth for blockchain accounts. I build the product, the tooling around it and, lately, the language too.",
-    aboutChips: ["Full-stack engineering", "Auth and access management", "Commerce and CMS", "Developer tooling", "Canvas and games"],
+    aboutChips: [
+      "Full-stack engineering", "Auth and access management", "Commerce and CMS",
+      "Developer tooling", "Canvas and games"
+    ],
     peek: "Peek at the umbrella",
     peekSub: "The real collision code of this page, in ArtScript",
     stack: "Stack",
@@ -96,9 +98,7 @@ let DICT = {
         role: "Shopify store",
         text: "Storefront for a trading-card and collectibles shop: a custom Shopify theme with Tailwind, a catalog per game and a weekly tournament calendar.",
         tags: ["Shopify", "Liquid", "Tailwind"],
-        links: [
-          { label: "aticodehisui.com", href: "https://aticodehisui.com" }
-        ]
+        links: [{ label: "aticodehisui.com", href: "https://aticodehisui.com" }]
       },
       {
         name: "World of Argentum",
@@ -115,19 +115,52 @@ let DICT = {
         role: "ArtScript",
         text: "Rain that hits a raster of the letters, splashes with restitution and slides off an umbrella you can hold. No framework and no physics library: every line is ArtScript.",
         tags: ["Canvas 2D", "Physics", "i18n"],
-        links: [
-          { label: "Source", href: "https://github.com/leb90/portfolio" }
-        ]
+        links: [{ label: "Source", href: "https://github.com/leb90/portfolio" }]
       }
     ],
     jobs: [
-      { years: "2025 — now", role: "Software Engineer", company: "Globant", text: "Authentication and access management for a blockchain account." },
-      { years: "2023 — 2025", role: "Senior Software Engineer", company: "DEPT®", text: "Shopify engineering for brands in a product team." },
-      { years: "2021 — 2023", role: "Full Stack Developer", company: "Parser", text: "Led the ESG platform for Moody's: React, Redux, AWS Lambda, DynamoDB." },
-      { years: "2019 — 2021", role: "Web UI Developer", company: "Leniolabs", text: "Features and migrations to React; led a small team for six months." },
-      { years: "2018 — 2019", role: "Web UI Developer", company: "Globant", text: "React apps for OpenBank and TeleTech." },
-      { years: "2017 — 2018", role: "Full-stack Developer", company: "GamSoft", text: "Web and mobile: Node.js, PHP, AngularJS, PhoneGap." },
-      { years: "2015 — 2016", role: "Developer", company: "SmartAdTags · Avalith", text: "A high-volume advertising API in Node.js; PHP and Laravel projects." }
+      {
+        years: "2025 — now",
+        role: "Software Engineer",
+        company: "Globant",
+        text: "Authentication and access management for a blockchain account."
+      },
+      {
+        years: "2023 — 2025",
+        role: "Senior Software Engineer",
+        company: "DEPT®",
+        text: "Shopify engineering for brands in a product team."
+      },
+      {
+        years: "2021 — 2023",
+        role: "Full Stack Developer",
+        company: "Parser",
+        text: "Led the ESG platform for Moody's: React, Redux, AWS Lambda, DynamoDB."
+      },
+      {
+        years: "2019 — 2021",
+        role: "Web UI Developer",
+        company: "Leniolabs",
+        text: "Features and migrations to React; led a small team for six months."
+      },
+      {
+        years: "2018 — 2019",
+        role: "Web UI Developer",
+        company: "Globant",
+        text: "React apps for OpenBank and TeleTech."
+      },
+      {
+        years: "2017 — 2018",
+        role: "Full-stack Developer",
+        company: "GamSoft",
+        text: "Web and mobile: Node.js, PHP, AngularJS, PhoneGap."
+      },
+      {
+        years: "2015 — 2016",
+        role: "Developer",
+        company: "SmartAdTags · Avalith",
+        text: "A high-volume advertising API in Node.js; PHP and Laravel projects."
+      }
     ]
   },
   es: {
@@ -135,8 +168,7 @@ let DICT = {
       "Software Engineer · 10 años en la web",
       "Creador de ArtScript, un lenguaje web para agentes de IA",
       "Autor de Reactpify: React dentro de temas de Shopify",
-      "Auth y accesos para cuentas blockchain",
-      "Canvas, física y algún que otro MMORPG"
+      "Auth y accesos para cuentas blockchain", "Canvas, física y algún que otro MMORPG"
     ],
     work: "Proyectos",
     about: "Sobre mí",
@@ -155,7 +187,10 @@ let DICT = {
     opensNewTab: "(se abre en otra pestaña)",
     aboutRole: "Software Engineer en Globant · Creador de ArtScript y Reactpify",
     aboutLead: "Diez años construyendo para la web, desde tiendas Shopify hasta auth para cuentas blockchain. Hago el producto, las herramientas alrededor y, últimamente, también el lenguaje.",
-    aboutChips: ["Ingeniería full stack", "Auth y gestión de accesos", "Commerce y CMS", "Herramientas para developers", "Canvas y juegos"],
+    aboutChips: [
+      "Ingeniería full stack", "Auth y gestión de accesos", "Commerce y CMS",
+      "Herramientas para developers", "Canvas y juegos"
+    ],
     peek: "Mirá el paraguas por dentro",
     peekSub: "El código real de la colisión de esta página, en ArtScript",
     stack: "Stack",
@@ -196,9 +231,7 @@ let DICT = {
         role: "Tienda Shopify",
         text: "La tienda de un local de cartas coleccionables: un tema de Shopify a medida con Tailwind, catálogo por juego y calendario semanal de torneos.",
         tags: ["Shopify", "Liquid", "Tailwind"],
-        links: [
-          { label: "aticodehisui.com", href: "https://aticodehisui.com" }
-        ]
+        links: [{ label: "aticodehisui.com", href: "https://aticodehisui.com" }]
       },
       {
         name: "World of Argentum",
@@ -215,19 +248,52 @@ let DICT = {
         role: "ArtScript",
         text: "Lluvia que choca contra un raster de las letras, salpica con restitución y resbala por un paraguas que podés agarrar. Sin framework ni librería de física: cada línea es ArtScript.",
         tags: ["Canvas 2D", "Física", "i18n"],
-        links: [
-          { label: "Código", href: "https://github.com/leb90/portfolio" }
-        ]
+        links: [{ label: "Código", href: "https://github.com/leb90/portfolio" }]
       }
     ],
     jobs: [
-      { years: "2025 — hoy", role: "Software Engineer", company: "Globant", text: "Autenticación y gestión de accesos para una cuenta blockchain." },
-      { years: "2023 — 2025", role: "Senior Software Engineer", company: "DEPT®", text: "Ingeniería Shopify para marcas, dentro de un equipo de producto." },
-      { years: "2021 — 2023", role: "Full Stack Developer", company: "Parser", text: "Lideré la plataforma ESG de Moody's: React, Redux, AWS Lambda, DynamoDB." },
-      { years: "2019 — 2021", role: "Web UI Developer", company: "Leniolabs", text: "Features y migraciones a React; lideré un equipo chico durante seis meses." },
-      { years: "2018 — 2019", role: "Web UI Developer", company: "Globant", text: "Apps React para OpenBank y TeleTech." },
-      { years: "2017 — 2018", role: "Full-stack Developer", company: "GamSoft", text: "Web y mobile: Node.js, PHP, AngularJS, PhoneGap." },
-      { years: "2015 — 2016", role: "Developer", company: "SmartAdTags · Avalith", text: "Una API de publicidad de alto volumen en Node.js; proyectos en PHP y Laravel." }
+      {
+        years: "2025 — hoy",
+        role: "Software Engineer",
+        company: "Globant",
+        text: "Autenticación y gestión de accesos para una cuenta blockchain."
+      },
+      {
+        years: "2023 — 2025",
+        role: "Senior Software Engineer",
+        company: "DEPT®",
+        text: "Ingeniería Shopify para marcas, dentro de un equipo de producto."
+      },
+      {
+        years: "2021 — 2023",
+        role: "Full Stack Developer",
+        company: "Parser",
+        text: "Lideré la plataforma ESG de Moody's: React, Redux, AWS Lambda, DynamoDB."
+      },
+      {
+        years: "2019 — 2021",
+        role: "Web UI Developer",
+        company: "Leniolabs",
+        text: "Features y migraciones a React; lideré un equipo chico durante seis meses."
+      },
+      {
+        years: "2018 — 2019",
+        role: "Web UI Developer",
+        company: "Globant",
+        text: "Apps React para OpenBank y TeleTech."
+      },
+      {
+        years: "2017 — 2018",
+        role: "Full-stack Developer",
+        company: "GamSoft",
+        text: "Web y mobile: Node.js, PHP, AngularJS, PhoneGap."
+      },
+      {
+        years: "2015 — 2016",
+        role: "Developer",
+        company: "SmartAdTags · Avalith",
+        text: "Una API de publicidad de alto volumen en Node.js; proyectos en PHP y Laravel."
+      }
     ]
   }
 }

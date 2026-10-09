@@ -2,10 +2,6 @@
 // letters (a 2px raster of them is the collision map), splashes with some restitution and drips
 // off the ledges. The umbrella is an ellipse you can pick up: rain bounces off it, rolls to the rim
 // and drips. One canvas, no libraries: every line below is ArtScript.
-//
-// Functions that change a particle or a canvas context take it as a parameter and work on a local
-// alias (`let d = drop`): ArtScript treats an assignment through a parameter as a possible state
-// change and notifies every state, which thousands of times per frame would stall the page.
 state holding = false
 
 state stopped = 0
@@ -66,7 +62,7 @@ component RainCity {
   fn toMask(g) {
     let m = world
     let data = g.getImageData(0, 0, m.mw, m.mh).data
-    let mask = new globalThis.Uint8Array(m.mw * m.mh)
+    let mask = new Uint8Array(m.mw * m.mh)
     for (let i = 0; i < m.mw * m.mh; i++) {
       mask[i] = data[i * 4 + 3] > 110 ? 1 : 0
     }
@@ -119,8 +115,9 @@ component RainCity {
       let found = -1
       while found < 0 && cy < m.mh - 1 {
         for (let cx = x0; cx <= x1; cx++) {
-          if found < 0 && m.mask[cy * m.mw + cx] == 1 {
+          if m.mask[cy * m.mw + cx] == 1 {
             found = cy
+            break
           }
         }
         cy++
@@ -235,8 +232,7 @@ component RainCity {
     g.fillText(L.ch, 0, 0)
     g.restore()
   }
-  fn drawGlyphs(layer, s, dy) {
-    let g = layer
+  fn drawGlyphs(g, s, dy) {
     g.font = `900 ${world.fs * s}px ${FONT}`
     g.textBaseline = "alphabetic"
     g.textAlign = "left"
@@ -291,15 +287,22 @@ component RainCity {
         for (let x = L.x + pad * 0.6; x + ww < L.x + L.w; x += ww * 2.25) {
           if solid(x - pad, y - pad) && solid(x + ww + pad, y - pad) && solid(x - pad, y + wh + pad) && solid(x + ww + pad, y + wh + pad) {
             n++
-            m.windows.push({ x, y, w: ww, h: wh, on: hash(n * 3.7 + L.n) < 0.36, warm: hash(n * 1.3) > 0.2, a: 0.5 + hash(n * 7.9) * 0.45 })
+            m.windows.push({
+              x,
+              y,
+              w: ww,
+              h: wh,
+              on: hash(n * 3.7 + L.n) < 0.36,
+              warm: hash(n * 1.3) > 0.2,
+              a: 0.5 + hash(n * 7.9) * 0.45
+            })
           }
         }
       }
     }
   }
   // The letters with a wet rim on every top edge, their windows and lit lobbies.
-  fn paintCity(layer) {
-    let g = layer
+  fn paintCity(g) {
     let m = world
     g.fillStyle = "rgba(176, 198, 250, 0.85)"
     drawGlyphs(g, 1, 0)
@@ -419,8 +422,7 @@ component RainCity {
     g.fillRect(0, m.ground, m.w, m.h - m.ground)
   }
   // ---------- rain ----------
-  fn respawn(drop, anywhere) {
-    let d = drop
+  fn respawn(d, anywhere) {
     let m = world
     d.vy = rnd(900, 1300)
     d.vx = d.vy * m.wind
@@ -433,8 +435,7 @@ component RainCity {
     }
     d.floor = rnd(m.ground + 4, m.h + 30)
   }
-  fn respawnFar(drop, anywhere) {
-    let d = drop
+  fn respawnFar(d, anywhere) {
     let m = world
     d.vy = rnd(520, 760)
     d.k = rnd(0.01, 0.016)
@@ -499,7 +500,16 @@ component RainCity {
       let depth = (y - m.ground) / Math.max(1, m.h - m.ground)
       m.ripples.push({ x, y, r: 0.5, max: 2.5 + depth * 8, life: 1 })
       if Math.random() < 0.3 {
-        m.bits.push({ x, y: y - 0.5, vx: rnd(-40, 40), vy: -rnd(50, 140), life: 0.5, r: 0.9, bounce: 1, floor: y + 0.5 })
+        m.bits.push({
+          x,
+          y: y - 0.5,
+          vx: rnd(-40, 40),
+          vy: -rnd(50, 140),
+          life: 0.5,
+          r: 0.9,
+          bounce: 1,
+          floor: y + 0.5
+        })
       }
     }
   }
@@ -523,8 +533,7 @@ component RainCity {
     }
     return false
   }
-  fn moveBit(bit, dt) {
-    let b = bit
+  fn moveBit(b, dt) {
     let m = world
     b.life -= dt
     if b.life <= 0 {
@@ -561,8 +570,7 @@ component RainCity {
   }
   // ---------- the umbrella ----------
   // 0: missed, 1: a raindrop splashed on it, 2: a droplet is resting or rolling on it.
-  fn hitUmbrella(target, isRain) {
-    let p = target
+  fn hitUmbrella(p, isRain) {
     let u = world.u
     let R = u.R
     let dx = p.x - u.cx
@@ -611,8 +619,7 @@ component RainCity {
     return 2
   }
   // Fast drops are tested at three points of their path against the canopy.
-  fn umbrellaSweep(drop, px, py) {
-    let d = drop
+  fn umbrellaSweep(d, px, py) {
     let x1 = d.x
     let y1 = d.y
     for (let k = 1; k <= 3; k++) {
@@ -706,7 +713,11 @@ component RainCity {
       u.x = u.homeX
       u.y = u.homeY
     }
-    cta = { x: Math.round(u.homeX + u.R * 2.05), y: Math.round(u.homeY - u.R * 2.65), show: !u.held && !m.reduced }
+    cta = {
+      x: Math.round(u.homeX + u.R * 2.05),
+      y: Math.round(u.homeY - u.R * 2.65),
+      show: !u.held && !m.reduced
+    }
   }
   fn overUmbrella(x, y) {
     let u = world.u
@@ -840,7 +851,16 @@ component RainCity {
     while m.ledgeDrip >= 1 && m.ledges.length > 0 {
       m.ledgeDrip -= 1
       let l = m.ledges[Math.floor(Math.random() * m.ledges.length)]
-      m.bits.push({ x: l.x, y: l.y, vx: 0, vy: rnd(5, 30), life: 3, r: rnd(1.1, 1.5), bounce: 0, floor: m.ground + rnd(1, 4) })
+      m.bits.push({
+        x: l.x,
+        y: l.y,
+        vx: 0,
+        vy: rnd(5, 30),
+        life: 3,
+        r: rnd(1.1, 1.5),
+        bounce: 0,
+        floor: m.ground + rnd(1, 4)
+      })
     }
     let i = 0
     while i < m.bits.length {
@@ -1005,8 +1025,7 @@ component RainCity {
       c.fillRect(0, 0, m.w, m.h)
     }
   }
-  fn drawUmbrella(layer) {
-    let c = layer
+  fn drawUmbrella(c) {
     let u = world.u
     let R = u.R
     let ry = R * 0.62
@@ -1090,8 +1109,7 @@ component RainCity {
     c.restore()
   }
   // A hand-drawn arrow from the "Grab the umbrella" note to the canopy.
-  fn drawArrow(layer) {
-    let c = layer
+  fn drawArrow(c) {
     let m = world
     let u = m.u
     if m.ctaFade <= 0.01 {
@@ -1169,7 +1187,7 @@ component RainCity {
     }
   }
   mount {
-    let ctx = sky.getContext ? sky.getContext("2d") : null
+    let ctx = sky.getContext("2d")
     if !ctx {
       return
     }
@@ -1178,7 +1196,7 @@ component RainCity {
       back: document.createElement("canvas"),
       front: document.createElement("canvas"),
       ready: false,
-      reduced: window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false,
+      reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
       t: 0,
       last: 0,
       raf: 0,
@@ -1196,7 +1214,21 @@ component RainCity {
       letters: [],
       maxBits: 900,
       pointer: { x: 0, y: 0 },
-      u: { x: 0, y: 0, vx: 0, vy: 0, a: 0, av: 0, R: 50, cx: 0, cy: 0, held: false, wet: 0, homeX: 0, homeY: 0 },
+      u: {
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        a: 0,
+        av: 0,
+        R: 50,
+        cx: 0,
+        cy: 0,
+        held: false,
+        wet: 0,
+        homeX: 0,
+        homeY: 0
+      },
       caught: 0,
       lastSync: 0,
       ledgeDrip: 0,

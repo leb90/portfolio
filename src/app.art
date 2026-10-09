@@ -1,6 +1,5 @@
 // Leandro Bisceglie's portfolio. The page is one screen: the rain city (scene.art), a rotating
 // tagline, the links and two sheets (About and Work). Texts live in i18n.art.
-
 state aboutOpen = false
 
 state workOpen = false
@@ -46,31 +45,40 @@ component Tagline {
   state glitch = false
   computed lines = t("taglines")
   computed line = lines[i % lines.length]
-
   // fade out, swap the line, fade in with a short glitch
   fn next() {
     shown = false
     setTimeout(swap, 250)
   }
-
   fn swap() {
     i = (i + 1) % lines.length
     shown = true
     glitch = true
     setTimeout(settle, 450)
   }
-
   fn settle() {
     glitch = false
   }
-
   mount {
-    if !window.matchMedia || window.matchMedia("(prefers-reduced-motion: reduce)").matches {
+    if window.matchMedia("(prefers-reduced-motion: reduce)").matches {
       return
     }
-    let timer = setInterval(next, 2800)
+    // Paced by animation frames rather than setInterval: on the prerender requestAnimationFrame never
+    // fires, while a real interval kept `art build --prerender` from exiting (ArtScript 0.2.9).
+    let last = 0
+    let raf = 0
+    let tick = now => {
+      if last == 0 {
+        last = now
+      } else if now - last >= 2800 {
+        last = now
+        next()
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
     cleanup {
-      clearInterval(timer)
+      cancelAnimationFrame(raf)
     }
   }
 
