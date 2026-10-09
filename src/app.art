@@ -265,15 +265,12 @@ component WorkModal {
       title t("experience") tag=h3 class="section-label"
       column class="timeline" {
         for j in t("jobs") {
-          grid class="job" {
-            text j.years class="job-years"
-            column {
-              row class="job-head" wrap {
-                text j.role class="job-role"
-                text j.company class="job-company"
-              }
-              text j.text tag=p class="job-text"
+          column class="job" {
+            row class="job-head" wrap {
+              text j.role class="job-role"
+              text j.company class="job-company"
             }
+            text j.text tag=p class="job-text"
           }
         }
       }
@@ -303,4 +300,5 @@ test "lists the projects and the experience" {
   see "Reactpify"
   see "World of Argentum"
   see "Leniolabs"
+  notSee "2019 — 2021"
 }

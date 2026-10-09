@@ -5,8 +5,8 @@
 ## Facts
 
 - Name: Leandro Bisceglie
-- Title: Software Engineer at Globant (Dec 2025 – present)
-- Experience: 10 years building for the web (since 2015)
+- Title: Software Engineer at Globant
+- Experience: 10 years building for the web
 - Location: Mar del Plata, Buenos Aires, Argentina (UTC−3); hybrid or remote
 - Languages: Spanish (native), English (professional; EF SET Proficient)
 - Contact: leandro.bisceglie@gmail.com, https://www.linkedin.com/in/leandro-bisceglie-06bb22113/
@@ -22,14 +22,14 @@
 
 ## Experience
 
-- Globant — Software Engineer (Dec 2025 – present): authentication and access management features for a blockchain account; scalable auth solutions integrated with existing services.
-- DEPT® — Senior Software Engineer (Aug 2023 – Dec 2025): Shopify-focused engineering in a product team.
-- Parser — Full Stack Developer (Oct 2021 – Feb 2023): led development of an ESG platform for Moody's with React, Redux, AWS Lambda, DynamoDB and Node.js.
-- Leniolabs — Web UI Developer (Sep 2019 – Oct 2021): features, UI components and migrations to React; led a small team for about six months.
-- Globant — Web UI Developer (Mar 2018 – Sep 2019): React apps for OpenBank and TeleTech.
-- GamSoft — Full-stack Developer (Jan 2017 – Mar 2018): web and mobile with Node.js, PHP, AngularJS and PhoneGap.
-- SmartAdTags — JavaScript Developer (2016): backend for a high-volume advertising API (Node.js, MySQL, microservices).
-- Avalith — Web Developer (Sep 2015 – Feb 2016): PHP, Laravel, WordPress and JavaScript projects.
+- Globant — Software Engineer: authentication and access management features for a blockchain account; scalable auth solutions integrated with existing services.
+- DEPT® — Senior Software Engineer: Shopify-focused engineering in a product team.
+- Parser — Full Stack Developer: led development of an ESG platform for Moody's with React, Redux, AWS Lambda, DynamoDB and Node.js.
+- Leniolabs — Web UI Developer: features, UI components and migrations to React; led a small team for about six months.
+- Globant — Web UI Developer: React apps for OpenBank and TeleTech.
+- GamSoft — Full-stack Developer: web and mobile with Node.js, PHP, AngularJS and PhoneGap.
+- SmartAdTags — JavaScript Developer: backend for a high-volume advertising API (Node.js, MySQL, microservices).
+- Avalith — Web Developer: PHP, Laravel, WordPress and JavaScript projects.
 
 ## Skills
 

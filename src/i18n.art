@@ -22,7 +22,7 @@ computed LINKS = {
   artscript: "https://artscript.dev",
   artscriptRepo: "https://github.com/leb90/ArtScript",
   reactpify: "https://github.com/leb90/reactpify",
-  reactpifyNpm: "https://www.npmjs.com/package/@leb90/reactpify",
+  reactpifyNpm: "https://www.npmjs.com/package/reactpifyjs",
   atico: "https://aticodehisui.com",
   woao: "https://worldofargentum.io",
   woaoRepo: "https://github.com/leb90/WoaoWeb",
@@ -90,7 +90,7 @@ computed DICT = {
         tags: ["React", "Shopify", "Liquid", "Vite"],
         links: [
           { label: "GitHub", href: "https://github.com/leb90/reactpify" },
-          { label: "npm", href: "https://www.npmjs.com/package/@leb90/reactpify" }
+          { label: "npm", href: "https://www.npmjs.com/package/reactpifyjs" }
         ]
       },
       {
@@ -120,43 +120,36 @@ computed DICT = {
     ],
     jobs: [
       {
-        years: "2025 — now",
         role: "Software Engineer",
         company: "Globant",
         text: "Authentication and access management for a blockchain account."
       },
       {
-        years: "2023 — 2025",
         role: "Senior Software Engineer",
         company: "DEPT®",
         text: "Shopify engineering for brands in a product team."
       },
       {
-        years: "2021 — 2023",
         role: "Full Stack Developer",
         company: "Parser",
         text: "Led the ESG platform for Moody's: React, Redux, AWS Lambda, DynamoDB."
       },
       {
-        years: "2019 — 2021",
         role: "Web UI Developer",
         company: "Leniolabs",
         text: "Features and migrations to React; led a small team for six months."
       },
       {
-        years: "2018 — 2019",
         role: "Web UI Developer",
         company: "Globant",
         text: "React apps for OpenBank and TeleTech."
       },
       {
-        years: "2017 — 2018",
         role: "Full-stack Developer",
         company: "GamSoft",
         text: "Web and mobile: Node.js, PHP, AngularJS, PhoneGap."
       },
       {
-        years: "2015 — 2016",
         role: "Developer",
         company: "SmartAdTags · Avalith",
         text: "A high-volume advertising API in Node.js; PHP and Laravel projects."
@@ -223,7 +216,7 @@ computed DICT = {
         tags: ["React", "Shopify", "Liquid", "Vite"],
         links: [
           { label: "GitHub", href: "https://github.com/leb90/reactpify" },
-          { label: "npm", href: "https://www.npmjs.com/package/@leb90/reactpify" }
+          { label: "npm", href: "https://www.npmjs.com/package/reactpifyjs" }
         ]
       },
       {
@@ -253,43 +246,36 @@ computed DICT = {
     ],
     jobs: [
       {
-        years: "2025 — hoy",
         role: "Software Engineer",
         company: "Globant",
         text: "Autenticación y gestión de accesos para una cuenta blockchain."
       },
       {
-        years: "2023 — 2025",
         role: "Senior Software Engineer",
         company: "DEPT®",
         text: "Ingeniería Shopify para marcas, dentro de un equipo de producto."
       },
       {
-        years: "2021 — 2023",
         role: "Full Stack Developer",
         company: "Parser",
         text: "Lideré la plataforma ESG de Moody's: React, Redux, AWS Lambda, DynamoDB."
       },
       {
-        years: "2019 — 2021",
         role: "Web UI Developer",
         company: "Leniolabs",
         text: "Features y migraciones a React; lideré un equipo chico durante seis meses."
       },
       {
-        years: "2018 — 2019",
         role: "Web UI Developer",
         company: "Globant",
         text: "Apps React para OpenBank y TeleTech."
       },
       {
-        years: "2017 — 2018",
         role: "Full-stack Developer",
         company: "GamSoft",
         text: "Web y mobile: Node.js, PHP, AngularJS, PhoneGap."
       },
       {
-        years: "2015 — 2016",
         role: "Developer",
         company: "SmartAdTags · Avalith",
         text: "Una API de publicidad de alto volumen en Node.js; proyectos en PHP y Laravel."
