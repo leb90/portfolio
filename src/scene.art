@@ -93,7 +93,7 @@ component RainCity {
     m.maskBottom = m.h
     findLedges()
   }
-  // The nav pills and the language switch are solid too: rain splashes on them.
+  // The language switch is solid too: rain splashes on it.
   fn drawColliders(g, s) {
     let base = sky.getBoundingClientRect()
     for el in document.querySelectorAll("[data-collide]") {
@@ -1161,7 +1161,7 @@ component RainCity {
       draw()
     }
   }
-  // The pills change width with the language: rebuild the collision map once they did.
+  // The switch can change size with the language: rebuild the collision map once it did.
   effect {
     if world && world.ready && world.lang != lang {
       world.lang = lang

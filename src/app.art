@@ -31,7 +31,7 @@ page Home "/" {
     LangToggle
     column class="below" align=center {
       Tagline
-      NavPills
+      NavLinks
     }
     Chip
     Credit
@@ -77,27 +77,27 @@ component Tagline {
   text line tag=p class=`tagline${shown ? "" : " hidden"}${glitch ? " glitch" : ""}` data-text=line aria-live="polite"
 }
 
-component NavPills {
+component NavLinks {
   row class="nav" tag=nav aria-label="Links" {
-    link href=LINKS.linkedin target="_blank" class="pill" style="--glow: #4cc9ff" aria-label=`LinkedIn ${t("opensNewTab")}` data-collide="1" {
+    link href=LINKS.linkedin target="_blank" class="navlink" style="--accent: #4cc9ff" aria-label=`LinkedIn ${t("opensNewTab")}` {
       text "" class="brand brand-linkedin"
-      text "LinkedIn" class="pill-label"
+      text "LinkedIn" class="navlink-label"
     }
-    link href=LINKS.github target="_blank" class="pill" style="--glow: #b892ff" aria-label=`GitHub ${t("opensNewTab")}` data-collide="1" {
+    link href=LINKS.github target="_blank" class="navlink" style="--accent: #b892ff" aria-label=`GitHub ${t("opensNewTab")}` {
       text "" class="brand brand-github"
-      text "GitHub" class="pill-label"
+      text "GitHub" class="navlink-label"
     }
-    link href=LINKS.email class="pill" style="--glow: #ffc857" aria-label=t("email") data-collide="1" {
-      icon "mail" size=18
-      text t("email") class="pill-label"
+    link href=LINKS.email class="navlink" style="--accent: #ffc857" aria-label=t("email") {
+      icon "mail" size=17
+      text t("email") class="navlink-label"
     }
-    button class="pill" style="--glow: #6ee7b7" aria-haspopup="dialog" aria-expanded=workOpen data-collide="1" -> workOpen = true {
-      icon "grid" size=18
-      text t("work") class="pill-label"
+    button class="navlink" style="--accent: #6ee7b7" aria-haspopup="dialog" aria-expanded=workOpen -> workOpen = true {
+      icon "grid" size=17
+      text t("work") class="navlink-label"
     }
-    button class="pill pill-primary" aria-haspopup="dialog" aria-expanded=aboutOpen data-collide="1" -> aboutOpen = true {
-      icon "user" size=18
-      text t("about")
+    button class="navlink" style="--accent: #ff4d5e" aria-haspopup="dialog" aria-expanded=aboutOpen -> aboutOpen = true {
+      icon "user" size=17
+      text t("about") class="navlink-label"
     }
   }
 }

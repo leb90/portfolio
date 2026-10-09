@@ -192,77 +192,75 @@ a {
 .nav {
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 6px 34px;
 }
 
-.pill {
-  position: relative;
-  isolation: isolate;
+/* Text links: the icon keeps its colour, and a line in the same colour draws in under the
+   label on hover (and stays while its sheet is open), then leaves to the right. */
+.navlink {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  background: rgba(10, 13, 24, 0.55);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.88);
-  font: 500 14px/1 var(--font-ui);
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--fg-2);
+  font: 500 15px/1 var(--font-ui);
   text-decoration: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 18px rgba(0, 0, 0, 0.8);
   cursor: pointer;
-  transition: transform 0.7s var(--spring), background-color 0.4s ease-out;
+  transition: color 0.3s ease-out;
   -webkit-tap-highlight-color: transparent;
 }
 
-.pill::before {
+.navlink .a-icon,
+.navlink .brand {
+  color: var(--accent, #fff);
+  transition: transform 0.45s var(--spring);
+}
+
+.navlink-label {
+  position: relative;
+}
+
+.navlink-label::after {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--glow, #fff);
-  opacity: 0.22;
-  filter: blur(12px);
-  transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--accent, #fff);
+  box-shadow: 0 0 10px var(--accent, #fff);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.pill:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.12);
+.navlink:hover,
+.navlink:focus-visible,
+.navlink[aria-expanded="true"] {
+  color: #fff;
 }
 
-.pill:hover::before,
-.pill:focus-visible::before {
-  opacity: 0.65;
-  transform: scale(1.12);
+.navlink:focus-visible {
+  outline: none;
 }
 
-.pill:active {
-  transform: scale(0.95);
-  transition-duration: 0.15s;
+.navlink:hover .navlink-label::after,
+.navlink:focus-visible .navlink-label::after,
+.navlink:active .navlink-label::after,
+.navlink[aria-expanded="true"] .navlink-label::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
-.pill .a-icon,
-.pill .brand {
-  color: var(--glow, #fff);
-}
-
-.pill-primary {
-  padding: 0 20px;
-  border-color: #fff;
-  background: #fff;
-  color: #05070d;
-}
-
-.pill-primary:hover {
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.pill-primary .a-icon {
-  color: #05070d;
+.navlink:hover .a-icon,
+.navlink:hover .brand {
+  transform: translateY(-2px);
 }
 
 .brand {
@@ -283,17 +281,12 @@ a {
 }
 
 @media (max-width: 639px) {
-  .pill:not(.pill-primary) {
-    width: 44px;
-    padding: 0;
+  .nav {
+    max-width: 330px;
+    gap: 0 24px;
   }
-  .pill:not(.pill-primary) .pill-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  .navlink {
+    font-size: 14px;
   }
 }
 
