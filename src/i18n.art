@@ -63,8 +63,8 @@ computed DICT = {
     ownText: "Outside my work for companies, I build my own projects: two open-source tools, ArtScript and Reactpify, my Shopify store Ático de Hisui and World of Argentum, a browser game.",
     seeProjects: "See my personal projects",
     stats: [
-      { n: "10+", label: "years building software" },
-      { n: "2", label: "open-source tools I created" },
+      { n: "10+", to: 10, suffix: "+", label: "years building software" },
+      { n: "2", to: 2, label: "open-source tools I created" },
       { n: "UTC−3", label: "Mar del Plata, Argentina" }
     ],
     toolsTitle: "What I do",
@@ -161,8 +161,8 @@ computed DICT = {
     ownText: "Aparte de mi trabajo en empresas, hago proyectos propios: dos herramientas open source, ArtScript y Reactpify, mi tienda en Shopify Ático de Hisui y World of Argentum, un juego en el navegador.",
     seeProjects: "Ver mis proyectos personales",
     stats: [
-      { n: "10+", label: "años construyendo software" },
-      { n: "2", label: "herramientas open source que creé" },
+      { n: "10+", to: 10, suffix: "+", label: "años construyendo software" },
+      { n: "2", to: 2, label: "herramientas open source que creé" },
       { n: "UTC−3", label: "Mar del Plata, Argentina" }
     ],
     toolsTitle: "Qué hago",

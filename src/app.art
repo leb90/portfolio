@@ -175,11 +175,14 @@ component Panel {
         icon "x" size=18
       }
     }
+    // Mounted only while open: the stats count up and the blocks appear each time it opens.
     column ref=body class="panel-body" {
-      if panel == "about" {
-        About
-      } else {
-        Projects
+      if panelOpen {
+        if panel == "about" {
+          About
+        } else {
+          Projects
+        }
       }
     }
   }
@@ -198,47 +201,60 @@ component About {
     }
   }
 
+  // Each block appears as it scrolls into view, one after another (`reveal`, ArtScript 0.2.10).
   column class="about" {
-    title t("hello") tag=h2 class="panel-title"
-    text t("aboutRole") tag=p class="panel-kicker"
-    text t("aboutLead") tag=p class="about-lead"
-    text t("aboutMore") tag=p class="about-text"
-    grid class="stats" cols=3 {
+    column class="block" reveal {
+      title t("hello") tag=h2 class="panel-title"
+      text t("aboutRole") tag=p class="panel-kicker"
+      text t("aboutLead") tag=p class="about-lead"
+      text t("aboutMore") tag=p class="about-text"
+    }
+    grid class="stats" cols=3 reveal {
       for s in t("stats") {
         column class="stat" {
-          text s.n class="stat-n"
+          if s.to {
+            Counter to=s.to suffix=(s.suffix ?? "") cls="stat-n"
+          } else {
+            text s.n class="stat-n"
+          }
           text s.label class="stat-label"
         }
       }
     }
-    title t("toolsTitle") tag=h3 class="panel-h3"
-    row class="tools" wrap {
-      for d in t("disciplines") {
-        text d class="tool"
+    column class="block" reveal {
+      title t("toolsTitle") tag=h3 class="panel-h3"
+      row class="tools" wrap {
+        for d in t("disciplines") {
+          text d class="tool"
+        }
+      }
+      row class="tools small" wrap {
+        for x in TOOLS {
+          text x class="tool"
+        }
       }
     }
-    row class="tools small" wrap {
-      for x in TOOLS {
-        text x class="tool"
+    column class="block" reveal {
+      title t("companiesTitle") tag=h3 class="panel-h3"
+      row class="companies" wrap {
+        for c in COMPANIES {
+          text c class="company"
+        }
+      }
+      link href=LINKS.linkedin target="_blank" class="out history" aria-label=`${t("history")} ${t("opensNewTab")}` {
+        text t("history")
+        icon "arrow-right" size=14
       }
     }
-    title t("companiesTitle") tag=h3 class="panel-h3"
-    row class="companies" wrap {
-      for c in COMPANIES {
-        text c class="company"
+    column class="block" reveal {
+      title t("ownTitle") tag=h3 class="panel-h3"
+      text t("ownText") tag=p class="about-text"
+      button class="text-btn" -> panel = "projects" {
+        text t("seeProjects")
+        icon "arrow-right" size=16
       }
     }
-    link href=LINKS.linkedin target="_blank" class="out history" aria-label=`${t("history")} ${t("opensNewTab")}` {
-      text t("history")
-      icon "arrow-right" size=14
-    }
-    title t("ownTitle") tag=h3 class="panel-h3"
-    text t("ownText") tag=p class="about-text"
-    button class="text-btn" -> panel = "projects" {
-      text t("seeProjects")
-      icon "arrow-right" size=16
-    }
-    column class="umbrella" {
+    column class="umbrella" reveal {
       text t("umbrellaText") tag=p class="about-text"
       button class="text-btn" aria-expanded=peek -> peek = !peek {
         text peek ? t("hideCode") : t("showCode")
@@ -248,7 +264,7 @@ component About {
         text SNIPPET tag=pre class="code"
       }
     }
-    column class="contact" {
+    column class="contact" reveal {
       title t("talk") tag=h3 class="panel-h3"
       row class="mail" wrap {
         link LINKS.address href=LINKS.mailHello class="mail-link"
@@ -281,11 +297,13 @@ component About {
 
 component Projects {
   column class="personal" {
-    title t("workTitle") tag=h2 class="panel-title"
-    text t("workLead") tag=p class="panel-kicker"
+    column class="block" reveal {
+      title t("workTitle") tag=h2 class="panel-title"
+      text t("workLead") tag=p class="panel-kicker"
+    }
     column class="projects" {
       for p in t("projects") {
-        column class="project" tag=article {
+        column class="project" tag=article reveal {
           row class="project-head" justify=between align=end wrap {
             title p.name tag=h3 class="project-name"
             text p.role class="project-role"

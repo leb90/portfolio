@@ -599,9 +599,9 @@ a {
 }
 
 .about,
-.personal {
+.personal,
+.block {
   gap: 18px;
-  animation: fade-up 0.35s ease-out both;
 }
 
 /* Headings use the typeface of the city's letters. */

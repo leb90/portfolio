@@ -56,7 +56,7 @@ fn add(x) {                      // function; body = JS statements
 - Assigning to a `state` updates the UI: `count++`, `name = "x"`, `users.push(u)`, `user.name = "x"`, also through a fn parameter (`fn sell(p) { p.stock-- }`).
 - A component that assigns its prop (`items = items.filter(...)`) changes the parent's state: pass a state (`List items=items`).
 - No hooks, setters or manual dependencies.
-- Statements: expression, `let x = ...`, `if cond { } else { }`, `for x in xs { }`, `for (let i = 0; i < n; i++) { }`, `while cond { }`, `break`, `continue`, `return`, `try { } catch (e) { } finally { }`. Operators are JavaScript's, bitwise ones included (`& | ^ ~ << >> >>>`). `fn`, `let` and `ref` compile to plain JavaScript (no overhead in a loop); a `let` or `const` written as a member is a `computed`. Heavy imperative code (a physics loop, a parser, canvas drawing) goes in a `.ts`/`.js` file imported with `use`: plain JavaScript with no restrictions; ArtScript is for what it shortens.
+- Statements: expression, `let x = ...`, `if cond { } else { }`, `for x in xs { }`, `for (let i = 0; i < n; i++) { }`, `while cond { }`, `break`, `continue`, `return`, `try { } catch (e) { } finally { }`. Operators are JavaScript's, bitwise ones included (`& | ^ ~ << >> >>>`), and `in` / `instanceof`. `fn`, `let` and `ref` compile to plain JavaScript (no overhead in a loop); a `let` or `const` written as a member is a `computed`. Heavy imperative code (a physics loop, a parser, canvas drawing) goes in a `.ts`/`.js` file imported with `use`: plain JavaScript with no restrictions; ArtScript is for what it shortens.
 - For DOM libraries (charts, maps), timers and subscriptions:
   ```
   ref box                          // the element marked `canvas ref=box` (set before mount runs)
@@ -134,6 +134,15 @@ column gap=4 align=center {
 | `table` > `tr` > `th` `td` | th/td: text | tr: click | | td: muted |
 
 - All take `class style id role aria-* data-*` (`button "Menu" aria-expanded=open`); texts and containers take `tag=` for the HTML element (`title "Plans" tag=h1`, `column tag=nav`; default: `title` is an h2, `text` a span); a field without `label=` is named by its `placeholder`. `style { .box { ... } }` in a component: CSS only for its elements. `.css` files in the project are bundled; theme: `:root { --a-primary: #e11d48; --a-radius: 4px; --a-font: Inter }` (also `--a-bg --a-fg --a-surface --a-border --a-muted --a-danger --a-success`).
+- Motion without code, as flags and props on any element (reduced-motion respected; a prerendered page shows everything without JavaScript):
+  ```
+  title "Nimbus" animate=rise                 // on mount: rise fade zoom slide-left slide-right pop
+  button "Start" primary animate=pop delay=240 hover=grow     // delay/duration in ms; hover: lift grow glow
+  grid cols=3 stagger {                       // children one after another
+    card reveal hover=lift { text "Fast" }    // appears when scrolled into view
+  }
+  ```
+  An animated background or a count-up are components added as source: `art add MeshBackground Particles Marquee Counter`; in a single file, write a `style { }` block with `@keyframes`.
 - Conditional flag: `text t.title muted=t.done`.
 - `gap=4` and `pad=4`: 1 unit = 4px. `align=start|center|end|stretch`. `justify=start|center|end|between|around`. `cols=3`.
 - `type=text|number|email|password|checkbox|date`. With `type=checkbox`, `input` binds a Bool.
