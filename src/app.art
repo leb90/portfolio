@@ -122,13 +122,13 @@ component Chip {
   computed locale = lang == "es" ? "es-AR" : "en-US"
 
   if holding {
-    row class="chip" aria-live="polite" {
+    row class="chip" aria-live="polite" animate=rise {
       text `${stopped.toLocaleString(locale)} ${t("stopped")}` class="chip-count"
       text t("moveHint") class="chip-hint"
       button t("putBack") class="chip-btn" -> holding = false
     }
   } else if stopped > 0 {
-    row class="chip" aria-live="polite" {
+    row class="chip" aria-live="polite" animate=rise {
       text `${stopped.toLocaleString(locale)} ${t("stopped")}` class="chip-count"
       text `${t("best")} ${best.toLocaleString(locale)}` class="chip-best"
     }
@@ -261,7 +261,7 @@ component About {
         icon "chevron-down" size=16 class=(peek ? "chev open" : "chev")
       }
       if peek {
-        text SNIPPET tag=pre class="code"
+        text SNIPPET tag=pre class="code" animate=rise
       }
     }
     column class="contact" reveal {
@@ -270,7 +270,7 @@ component About {
         link LINKS.address href=LINKS.mailHello class="mail-link"
         button class=(copied ? "copy done" : "copy") -> copyEmail() {
           if copied {
-            icon "check" size=14
+            icon "check" size=14 animate=pop
           } else {
             icon "copy" size=14
           }
