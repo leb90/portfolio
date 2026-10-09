@@ -1,0 +1,22 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "art dev",
+    "start": "art dev",
+    "check": "art check",
+    "test": "art test",
+    "build": "art build --prerender",
+    "build:pages": "art build --prerender --base /portfolio --site https://leb90.github.io/portfolio"
+  },
+  "devDependencies": {
+    "@artscript/core": "^0.2.0",
+    "@happy-dom/global-registrator": "^20.14.6"
+  },
+  "description": "Leandro Bisceglie's portfolio, written in ArtScript: a rainy city made of the letters of my name.",
+  "engines": {
+    "node": ">=24"
+  }
+}

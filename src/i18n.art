@@ -1,0 +1,233 @@
+// Every visible string, in English (default) and Spanish. `t("key")` reads the current language,
+// so any text that uses it updates when `lang` changes.
+state lang = "en"
+
+fn t(key) {
+  return DICT[lang][key] ?? DICT.en[key] ?? key
+}
+
+fn setLang(next) {
+  lang = next
+  try {
+    localStorage.setItem("lb-lang", next)
+  } catch (e) {
+  }
+}
+
+let LINKS = {
+  linkedin: "https://www.linkedin.com/in/leandro-bisceglie-06bb22113/",
+  github: "https://github.com/leb90",
+  email: "mailto:leandro.bisceglie@gmail.com",
+  mailHello: "mailto:leandro.bisceglie@gmail.com?subject=Hi%20Leandro",
+  artscript: "https://artscript.dev",
+  artscriptRepo: "https://github.com/leb90/ArtScript",
+  reactpify: "https://github.com/leb90/reactpify",
+  reactpifyNpm: "https://www.npmjs.com/package/@leb90/reactpify",
+  atico: "https://aticodehisui.com",
+  woao: "https://worldofargentum.io",
+  woaoRepo: "https://github.com/leb90/WoaoWeb",
+  source: "https://github.com/leb90/portfolio"
+}
+
+let DICT = {
+  en: {
+    taglines: [
+      "Software Engineer · 10 years on the web",
+      "Creator of ArtScript, a web language for AI agents",
+      "Author of Reactpify: React inside Shopify themes",
+      "Auth and access for blockchain accounts",
+      "Canvas, physics and the odd MMORPG"
+    ],
+    work: "Work",
+    about: "About",
+    email: "Email",
+    language: "Language",
+    grab: "Grab the umbrella",
+    grabHint: "and watch the rain bounce off it",
+    putBack: "Put it back",
+    moveHint: "Move it around · Esc to let go",
+    stopped: "drops stopped",
+    best: "best",
+    builtWith: "Built from scratch with ",
+    builtWhat: ", the language I created. Rain, physics and both languages included. ",
+    source: "Source",
+    close: "Close",
+    opensNewTab: "(opens in a new tab)",
+    aboutRole: "Software Engineer at Globant · Creator of ArtScript and Reactpify",
+    aboutLead: "Ten years shipping for the web, from Shopify storefronts to auth for blockchain accounts. I build the product, the tooling around it and, lately, the language too.",
+    aboutChips: ["Full-stack engineering", "Auth and access management", "Commerce and CMS", "Developer tooling", "Canvas and games"],
+    peek: "Peek at the umbrella",
+    peekSub: "The real collision code of this page, in ArtScript",
+    stack: "Stack",
+    stackValue: "React, Redux, TypeScript, Node.js · CMS and commerce: WordPress, Shopify, AEM · Vercel, Netlify, AWS, GCP · GraphQL, Storybook, Jest, Cypress, GitHub Actions, Terraform",
+    built: "Built",
+    builtValue: "ArtScript, a full-stack web language for AI agents · Reactpify, React components in any Shopify theme · World of Argentum, a 2D MMORPG on canvas",
+    clients: "Clients",
+    clientsValue: "OpenBank, TeleTech, Moody's ESG platform, Shopify brands at DEPT® and a blockchain account platform at Globant.",
+    works: "Works",
+    worksValue: "Hybrid or remote, from Mar del Plata, Argentina (UTC−3) · English and Spanish",
+    fullProfile: "Full profile",
+    workTitle: "Things I built",
+    workLead: "Open source, products and the odd game. Client code stays private; these are mine.",
+    experience: "Experience",
+    projects: [
+      {
+        name: "ArtScript",
+        role: "Creator",
+        text: "A full-stack web language that compiles to small, dependency-free JavaScript and a Node server. Designed for AI agents: across 50 measured tasks, Claude built the same apps for up to 50% less than in React.",
+        tags: ["Compiler", "Runtime", "LSP", "MCP"],
+        links: [
+          { label: "artscript.dev", href: "https://artscript.dev" },
+          { label: "GitHub", href: "https://github.com/leb90/ArtScript" }
+        ]
+      },
+      {
+        name: "Reactpify",
+        role: "Author",
+        text: "The easiest way to add React components to any Shopify theme. Liquid sections are generated from each component's props, with Vite, Tailwind, Redux and metaobjects built in.",
+        tags: ["React", "Shopify", "Liquid", "Vite"],
+        links: [
+          { label: "GitHub", href: "https://github.com/leb90/reactpify" },
+          { label: "npm", href: "https://www.npmjs.com/package/@leb90/reactpify" }
+        ]
+      },
+      {
+        name: "Ático de Hisui",
+        role: "Shopify store",
+        text: "Storefront for a trading-card and collectibles shop: a custom Shopify theme with Tailwind, a catalog per game and a weekly tournament calendar.",
+        tags: ["Shopify", "Liquid", "Tailwind"],
+        links: [
+          { label: "aticodehisui.com", href: "https://aticodehisui.com" }
+        ]
+      },
+      {
+        name: "World of Argentum",
+        role: "Canvas game",
+        text: "A classic 2D fantasy MMORPG, free to play in the browser with no downloads: canvas rendering, tile maps and real-time multiplayer.",
+        tags: ["Canvas", "Node.js", "Multiplayer"],
+        links: [
+          { label: "worldofargentum.io", href: "https://worldofargentum.io" },
+          { label: "GitHub", href: "https://github.com/leb90/WoaoWeb" }
+        ]
+      },
+      {
+        name: "This page",
+        role: "ArtScript",
+        text: "Rain that hits a raster of the letters, splashes with restitution and slides off an umbrella you can hold. No framework and no physics library: every line is ArtScript.",
+        tags: ["Canvas 2D", "Physics", "i18n"],
+        links: [
+          { label: "Source", href: "https://github.com/leb90/portfolio" }
+        ]
+      }
+    ],
+    jobs: [
+      { years: "2025 — now", role: "Software Engineer", company: "Globant", text: "Authentication and access management for a blockchain account." },
+      { years: "2023 — 2025", role: "Senior Software Engineer", company: "DEPT®", text: "Shopify engineering for brands in a product team." },
+      { years: "2021 — 2023", role: "Full Stack Developer", company: "Parser", text: "Led the ESG platform for Moody's: React, Redux, AWS Lambda, DynamoDB." },
+      { years: "2019 — 2021", role: "Web UI Developer", company: "Leniolabs", text: "Features and migrations to React; led a small team for six months." },
+      { years: "2018 — 2019", role: "Web UI Developer", company: "Globant", text: "React apps for OpenBank and TeleTech." },
+      { years: "2017 — 2018", role: "Full-stack Developer", company: "GamSoft", text: "Web and mobile: Node.js, PHP, AngularJS, PhoneGap." },
+      { years: "2015 — 2016", role: "Developer", company: "SmartAdTags · Avalith", text: "A high-volume advertising API in Node.js; PHP and Laravel projects." }
+    ]
+  },
+  es: {
+    taglines: [
+      "Software Engineer · 10 años en la web",
+      "Creador de ArtScript, un lenguaje web para agentes de IA",
+      "Autor de Reactpify: React dentro de temas de Shopify",
+      "Auth y accesos para cuentas blockchain",
+      "Canvas, física y algún que otro MMORPG"
+    ],
+    work: "Proyectos",
+    about: "Sobre mí",
+    email: "Email",
+    language: "Idioma",
+    grab: "Agarrá el paraguas",
+    grabHint: "y mirá cómo rebota la lluvia",
+    putBack: "Devolverlo",
+    moveHint: "Movelo · Esc para soltarlo",
+    stopped: "gotas frenadas",
+    best: "récord",
+    builtWith: "Hecho desde cero con ",
+    builtWhat: ", el lenguaje que creé. Lluvia, física y los dos idiomas incluidos. ",
+    source: "Código",
+    close: "Cerrar",
+    opensNewTab: "(se abre en otra pestaña)",
+    aboutRole: "Software Engineer en Globant · Creador de ArtScript y Reactpify",
+    aboutLead: "Diez años construyendo para la web, desde tiendas Shopify hasta auth para cuentas blockchain. Hago el producto, las herramientas alrededor y, últimamente, también el lenguaje.",
+    aboutChips: ["Ingeniería full stack", "Auth y gestión de accesos", "Commerce y CMS", "Herramientas para developers", "Canvas y juegos"],
+    peek: "Mirá el paraguas por dentro",
+    peekSub: "El código real de la colisión de esta página, en ArtScript",
+    stack: "Stack",
+    stackValue: "React, Redux, TypeScript, Node.js · CMS y commerce: WordPress, Shopify, AEM · Vercel, Netlify, AWS, GCP · GraphQL, Storybook, Jest, Cypress, GitHub Actions, Terraform",
+    built: "Creé",
+    builtValue: "ArtScript, un lenguaje web full stack para agentes de IA · Reactpify, componentes React en cualquier tema de Shopify · World of Argentum, un MMORPG 2D en canvas",
+    clients: "Clientes",
+    clientsValue: "OpenBank, TeleTech, la plataforma ESG de Moody's, marcas en Shopify desde DEPT® y una plataforma de cuentas blockchain en Globant.",
+    works: "Trabajo",
+    worksValue: "Híbrido o remoto, desde Mar del Plata, Argentina (UTC−3) · Inglés y español",
+    fullProfile: "Perfil completo",
+    workTitle: "Cosas que construí",
+    workLead: "Open source, productos y algún juego. El código de clientes es privado; estos son míos.",
+    experience: "Experiencia",
+    projects: [
+      {
+        name: "ArtScript",
+        role: "Creador",
+        text: "Un lenguaje web full stack que compila a JavaScript chico y sin dependencias, más un servidor Node. Pensado para agentes de IA: en 50 tareas medidas, Claude hizo las mismas apps hasta un 50% más barato que en React.",
+        tags: ["Compilador", "Runtime", "LSP", "MCP"],
+        links: [
+          { label: "artscript.dev", href: "https://artscript.dev" },
+          { label: "GitHub", href: "https://github.com/leb90/ArtScript" }
+        ]
+      },
+      {
+        name: "Reactpify",
+        role: "Autor",
+        text: "La forma más simple de sumar componentes React a cualquier tema de Shopify. Las secciones Liquid se generan a partir de las props de cada componente, con Vite, Tailwind, Redux y metaobjects incluidos.",
+        tags: ["React", "Shopify", "Liquid", "Vite"],
+        links: [
+          { label: "GitHub", href: "https://github.com/leb90/reactpify" },
+          { label: "npm", href: "https://www.npmjs.com/package/@leb90/reactpify" }
+        ]
+      },
+      {
+        name: "Ático de Hisui",
+        role: "Tienda Shopify",
+        text: "La tienda de un local de cartas coleccionables: un tema de Shopify a medida con Tailwind, catálogo por juego y calendario semanal de torneos.",
+        tags: ["Shopify", "Liquid", "Tailwind"],
+        links: [
+          { label: "aticodehisui.com", href: "https://aticodehisui.com" }
+        ]
+      },
+      {
+        name: "World of Argentum",
+        role: "Juego en canvas",
+        text: "Un MMORPG 2D de fantasía clásico, gratis en el navegador y sin descargas: render en canvas, mapas de tiles y multijugador en tiempo real.",
+        tags: ["Canvas", "Node.js", "Multijugador"],
+        links: [
+          { label: "worldofargentum.io", href: "https://worldofargentum.io" },
+          { label: "GitHub", href: "https://github.com/leb90/WoaoWeb" }
+        ]
+      },
+      {
+        name: "Esta página",
+        role: "ArtScript",
+        text: "Lluvia que choca contra un raster de las letras, salpica con restitución y resbala por un paraguas que podés agarrar. Sin framework ni librería de física: cada línea es ArtScript.",
+        tags: ["Canvas 2D", "Física", "i18n"],
+        links: [
+          { label: "Código", href: "https://github.com/leb90/portfolio" }
+        ]
+      }
+    ],
+    jobs: [
+      { years: "2025 — hoy", role: "Software Engineer", company: "Globant", text: "Autenticación y gestión de accesos para una cuenta blockchain." },
+      { years: "2023 — 2025", role: "Senior Software Engineer", company: "DEPT®", text: "Ingeniería Shopify para marcas, dentro de un equipo de producto." },
+      { years: "2021 — 2023", role: "Full Stack Developer", company: "Parser", text: "Lideré la plataforma ESG de Moody's: React, Redux, AWS Lambda, DynamoDB." },
+      { years: "2019 — 2021", role: "Web UI Developer", company: "Leniolabs", text: "Features y migraciones a React; lideré un equipo chico durante seis meses." },
+      { years: "2018 — 2019", role: "Web UI Developer", company: "Globant", text: "Apps React para OpenBank y TeleTech." },
+      { years: "2017 — 2018", role: "Full-stack Developer", company: "GamSoft", text: "Web y mobile: Node.js, PHP, AngularJS, PhoneGap." },
+      { years: "2015 — 2016", role: "Developer", company: "SmartAdTags · Avalith", text: "Una API de publicidad de alto volumen en Node.js; proyectos en PHP y Laravel." }
+    ]
+  }
+}

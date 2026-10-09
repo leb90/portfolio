@@ -1,0 +1,1249 @@
+// The hero: a night city whose buildings are the letters of my name. Rain falls on it, hits the
+// letters (a 2px raster of them is the collision map), splashes with some restitution and drips
+// off the ledges. The umbrella is an ellipse you can pick up: rain bounces off it, rolls to the rim
+// and drips. One canvas, no libraries: every line below is ArtScript.
+//
+// Functions that change a particle or a canvas context take it as a parameter and work on a local
+// alias (`let d = drop`): ArtScript treats an assignment through a parameter as a possible state
+// change and notifies every state, which thousands of times per frame would stall the page.
+state holding = false
+
+state stopped = 0
+
+state best = 0
+
+state cta = { x: 0, y: 0, show: false }
+
+computed FONT = "\"Big Shoulders Display\", Impact, \"Arial Narrow\", sans-serif"
+
+component RainCity {
+  ref sky
+  ref world
+  fn rnd(a, b) {
+    return a + Math.random() * (b - a)
+  }
+  // Stable pseudo-random numbers, so the city looks the same after a resize.
+  fn hash(i) {
+    let s = Math.sin(i * 127.1 + 311.7) * 43758.5453
+    return s - Math.floor(s)
+  }
+  fn clamp(v, a, b) {
+    return Math.max(a, Math.min(b, v))
+  }
+  // ---------- the collision map ----------
+  fn solid(x, y) {
+    let m = world
+    let cx = Math.floor(x / m.cell)
+    let cy = Math.floor(y / m.cell)
+    if cx < 0 || cy < 0 || cx >= m.mw || cy >= m.mh {
+      return false
+    }
+    return m.mask[cy * m.mw + cx] == 1
+  }
+  // The surface normal: away from the solid cells around the point.
+  fn normalAt(x, y) {
+    let m = world
+    let cx = Math.floor(x / m.cell)
+    let cy = Math.floor(y / m.cell)
+    let sx = 0
+    let sy = 0
+    for (let j = -3; j <= 3; j++) {
+      for (let i = -3; i <= 3; i++) {
+        let px = cx + i
+        let py = cy + j
+        if px >= 0 && py >= 0 && px < m.mw && py < m.mh && m.mask[py * m.mw + px] == 1 {
+          sx += i
+          sy += j
+        }
+      }
+    }
+    let len = Math.hypot(sx, sy)
+    if len < 0.001 {
+      return { x: 0, y: -1 }
+    }
+    return { x: -sx / len, y: -sy / len }
+  }
+  fn toMask(g) {
+    let m = world
+    let data = g.getImageData(0, 0, m.mw, m.mh).data
+    let mask = new globalThis.Uint8Array(m.mw * m.mh)
+    for (let i = 0; i < m.mw * m.mh; i++) {
+      mask[i] = data[i * 4 + 3] > 110 ? 1 : 0
+    }
+    return mask
+  }
+  fn buildMask() {
+    let m = world
+    m.cell = 2
+    m.mw = Math.ceil(m.w / m.cell)
+    m.mh = Math.ceil(m.h / m.cell)
+    let cv = document.createElement("canvas")
+    cv.width = m.mw
+    cv.height = m.mh
+    let g = cv.getContext("2d", { willReadFrequently: true })
+    g.fillStyle = "#fff"
+    drawGlyphs(g, 1 / m.cell, 0)
+    m.mask = toMask(g)
+    findRoofs()
+    planProps()
+    drawProps(g, 1 / m.cell)
+    drawColliders(g, 1 / m.cell)
+    m.mask = toMask(g)
+    m.maskTop = m.nameTop - m.cap * 0.45
+    m.maskBottom = m.h
+    findLedges()
+  }
+  // The nav pills and the language switch are solid too: rain splashes on them.
+  fn drawColliders(g, s) {
+    let base = sky.getBoundingClientRect()
+    for el in document.querySelectorAll("[data-collide]") {
+      let r = el.getBoundingClientRect()
+      if r.width > 0 && r.height > 0 {
+        g.beginPath()
+        if g.roundRect {
+          g.roundRect((r.left - base.left) * s, (r.top - base.top) * s, r.width * s, r.height * s, r.height * s / 2)
+        } else {
+          g.rect((r.left - base.left) * s, (r.top - base.top) * s, r.width * s, r.height * s)
+        }
+        g.fill()
+      }
+    }
+  }
+  // The widest flat run at the top of each letter: where antennas, tanks and the umbrella stand.
+  fn findRoofs() {
+    let m = world
+    for L in m.letters {
+      let x0 = Math.max(0, Math.floor(L.x / m.cell))
+      let x1 = Math.min(m.mw - 1, Math.ceil((L.x + L.w) / m.cell))
+      let cy = Math.max(0, Math.floor(L.top / m.cell) - 3)
+      let found = -1
+      while found < 0 && cy < m.mh - 1 {
+        for (let cx = x0; cx <= x1; cx++) {
+          if found < 0 && m.mask[cy * m.mw + cx] == 1 {
+            found = cy
+          }
+        }
+        cy++
+      }
+      let row = Math.max(0, found + 1)
+      let best0 = x0
+      let best1 = x0
+      let run = -1
+      for (let cx = x0; cx <= x1 + 1; cx++) {
+        let on = cx <= x1 && m.mask[row * m.mw + cx] == 1
+        if on && run < 0 {
+          run = cx
+        }
+        if !on && run >= 0 {
+          if cx - run > best1 - best0 {
+            best0 = run
+            best1 = cx
+          }
+          run = -1
+        }
+      }
+      L.roof = { x0: best0 * m.cell, x1: best1 * m.cell, y: found * m.cell }
+    }
+  }
+  // Cells with air below them, above the street: water drips from there.
+  fn findLedges() {
+    let m = world
+    m.ledges = []
+    let bottom = Math.floor(m.ground / m.cell) - 2
+    for (let cy = Math.max(1, Math.floor(m.nameTop / m.cell)); cy < bottom; cy++) {
+      for (let cx = 1; cx < m.mw - 1; cx++) {
+        let i = cy * m.mw + cx
+        if m.mask[i] == 1 && m.mask[i + m.mw] == 0 {
+          m.ledges.push({ x: cx * m.cell + m.cell / 2, y: (cy + 1) * m.cell + 0.5 })
+        }
+      }
+    }
+  }
+  // ---------- layout ----------
+  fn lineWidth(c, line, fs) {
+    let total = 0
+    for (let i = 0; i < line.length; i++) {
+      if line[i] == " " {
+        total += fs * 0.3
+      } else {
+        total += c.measureText(line[i]).width * fs / 100 + (i < line.length - 1 ? fs * 0.045 : 0)
+      }
+    }
+    return total
+  }
+  fn layout() {
+    let m = world
+    let r = sky.getBoundingClientRect()
+    m.left = r.left
+    m.top = r.top
+    m.w = Math.max(300, Math.round(r.width))
+    m.h = Math.max(420, Math.round(r.height))
+    m.dpr = Math.min(window.devicePixelRatio || 1, 2)
+    sky.width = Math.round(m.w * m.dpr)
+    sky.height = Math.round(m.h * m.dpr)
+    let c = m.ctx
+    c.font = `900 100px ${FONT}`
+    let wide = m.w >= 760 && m.w / m.h > 0.9
+    let lines = wide ? ["LEANDRO BISCEGLIE"] : ["LEANDRO", "BISCEGLIE"]
+    let asc = c.measureText("E").actualBoundingBoxAscent || 72
+    let widest = 0
+    for line in lines {
+      widest = Math.max(widest, lineWidth(c, line, 100))
+    }
+    let sy = wide ? 1.7 : 1.85
+    let fs = (wide ? Math.min(m.w * 0.9, 1560) : m.w * 0.92) / widest * 100
+    fs = Math.min(fs, (wide ? m.h * 0.32 : m.h * 0.16) / (asc / 100 * sy))
+    let cap = asc / 100 * fs * sy
+    let nameH = lines.length * cap + (lines.length - 1) * cap * 0.16
+    let R = clamp(cap * (wide ? 0.34 : 0.4), 30, 72)
+    let above = R * 2.9 + 36
+    let below = wide ? 230 : 250
+    if above + nameH > m.h - below {
+      let k = Math.max(0.5, (m.h - below - above) / nameH)
+      fs *= k
+      cap *= k
+      nameH *= k
+    }
+    m.fs = fs
+    m.sy = sy
+    m.cap = cap
+    m.R = R
+    m.ground = Math.round(clamp(m.h * (wide ? 0.6 : 0.6), above + nameH, m.h - below))
+    m.nameTop = m.ground - nameH
+    m.letters = []
+    for (let li = 0; li < lines.length; li++) {
+      let line = lines[li]
+      let base = m.ground - (lines.length - 1 - li) * cap * 1.16
+      let x = (m.w - lineWidth(c, line, fs)) / 2
+      for (let i = 0; i < line.length; i++) {
+        let ch = line[i]
+        if ch == " " {
+          x += fs * 0.3
+        } else {
+          let adv = c.measureText(ch).width * fs / 100
+          m.letters.push({ ch, x, w: adv, top: base - cap, base, n: m.letters.length, roof: null })
+          x += adv + fs * 0.045
+        }
+      }
+    }
+  }
+  // ---------- the city ----------
+  fn drawGlyph(g, L, s, dy) {
+    g.save()
+    g.translate(L.x * s, (L.base + dy) * s)
+    g.scale(1, world.sy)
+    g.fillText(L.ch, 0, 0)
+    g.restore()
+  }
+  fn drawGlyphs(layer, s, dy) {
+    let g = layer
+    g.font = `900 ${world.fs * s}px ${FONT}`
+    g.textBaseline = "alphabetic"
+    g.textAlign = "left"
+    for L in world.letters {
+      drawGlyph(g, L, s, dy)
+    }
+  }
+  // Masts with a warning light, and water tanks: rooftops make the letters read as buildings.
+  fn planProps() {
+    let m = world
+    m.props = []
+    let plan = { "2": "mast", "4": "tank", "6": "mast", "8": "mast", "11": "tank", "13": "mast" }
+    for L in m.letters {
+      let kind = plan[String(L.n)]
+      if kind && L.roof && L.roof.y > 0 {
+        let x = (L.roof.x0 + L.roof.x1) / 2
+        let h = kind == "mast" ? m.cap * (0.16 + hash(L.n) * 0.16) : m.cap * 0.14
+        m.props.push({ kind, x, y: L.roof.y + 1, h, light: kind == "mast", phase: hash(L.n * 3.3) * 2 })
+      }
+    }
+  }
+  fn drawProps(g, s) {
+    let lw = Math.max(1.4, world.fs * 0.012)
+    for p in world.props {
+      let top = p.y - p.h
+      if p.kind == "mast" {
+        g.fillRect((p.x - lw / 2) * s, top * s, lw * s, p.h * s)
+        g.fillRect((p.x - p.h * 0.12) * s, (top + p.h * 0.38) * s, p.h * 0.24 * s, lw * s)
+        g.fillRect((p.x - lw * 2) * s, (p.y - lw * 2) * s, lw * 4 * s, lw * 2 * s)
+      } else {
+        let tw = p.h * 0.95
+        g.fillRect((p.x - tw / 2) * s, (top + p.h * 0.2) * s, tw * s, p.h * 0.55 * s)
+        g.fillRect((p.x - tw * 0.4) * s, (top + p.h * 0.7) * s, lw * s, p.h * 0.3 * s)
+        g.fillRect((p.x + tw * 0.4 - lw) * s, (top + p.h * 0.7) * s, lw * s, p.h * 0.3 * s)
+        g.beginPath()
+        g.moveTo((p.x - tw / 2) * s, (top + p.h * 0.2) * s)
+        g.lineTo(p.x * s, top * s)
+        g.lineTo((p.x + tw / 2) * s, (top + p.h * 0.2) * s)
+        g.fill()
+      }
+    }
+  }
+  fn planWindows() {
+    let m = world
+    m.windows = []
+    let ww = Math.max(2, m.fs * 0.026)
+    let wh = ww * 1.45 * m.sy / 1.4
+    let pad = Math.max(2.5, ww * 0.85)
+    let n = 0
+    for L in m.letters {
+      for (let y = L.top + pad * 1.8; y + wh < L.base - wh * 2.6; y += wh * 1.9) {
+        for (let x = L.x + pad * 0.6; x + ww < L.x + L.w; x += ww * 2.25) {
+          if solid(x - pad, y - pad) && solid(x + ww + pad, y - pad) && solid(x - pad, y + wh + pad) && solid(x + ww + pad, y + wh + pad) {
+            n++
+            m.windows.push({ x, y, w: ww, h: wh, on: hash(n * 3.7 + L.n) < 0.36, warm: hash(n * 1.3) > 0.2, a: 0.5 + hash(n * 7.9) * 0.45 })
+          }
+        }
+      }
+    }
+  }
+  // The letters with a wet rim on every top edge, their windows and lit lobbies.
+  fn paintCity(layer) {
+    let g = layer
+    let m = world
+    g.fillStyle = "rgba(176, 198, 250, 0.85)"
+    drawGlyphs(g, 1, 0)
+    drawProps(g, 1)
+    g.save()
+    g.globalCompositeOperation = "source-atop"
+    for L in m.letters {
+      let tone = hash(L.n * 5.1) * 10
+      let grad = g.createLinearGradient(0, L.top, 0, L.base)
+      grad.addColorStop(0, `rgb(${40 + tone}, ${52 + tone}, ${88 + tone})`)
+      grad.addColorStop(0.55, `rgb(${25 + tone}, ${33 + tone}, ${58 + tone})`)
+      grad.addColorStop(1, `rgb(${14 + tone / 2}, ${19 + tone / 2}, ${36 + tone / 2})`)
+      g.fillStyle = grad
+      drawGlyph(g, L, 1, 1.6)
+    }
+    for w in m.windows {
+      if w.on {
+        g.fillStyle = w.warm ? `rgba(255, 196, 110, ${w.a * 0.18})` : `rgba(150, 210, 255, ${w.a * 0.16})`
+        g.fillRect(w.x - 1.5, w.y - 1.5, w.w + 3, w.h + 3)
+        g.fillStyle = w.warm ? `rgba(255, 206, 128, ${w.a})` : `rgba(165, 218, 255, ${w.a * 0.9})`
+      } else {
+        g.fillStyle = "rgba(130, 150, 200, 0.08)"
+      }
+      g.fillRect(w.x, w.y, w.w, w.h)
+    }
+    let lobby = Math.max(3, m.fs * 0.04)
+    for L in m.letters {
+      let glow = g.createLinearGradient(0, L.base - lobby * 2.2, 0, L.base)
+      glow.addColorStop(0, "rgba(255, 180, 100, 0)")
+      glow.addColorStop(0.6, "rgba(255, 186, 110, 0.32)")
+      glow.addColorStop(1, "rgba(255, 196, 120, 0.12)")
+      g.fillStyle = glow
+      g.fillRect(L.x - 2, L.base - lobby * 2.2, L.w + 4, lobby * 2.2)
+    }
+    g.restore()
+    g.strokeStyle = "rgba(160, 186, 245, 0.32)"
+    g.lineWidth = 0.7
+    for L in m.letters {
+      g.save()
+      g.translate(L.x, L.base)
+      g.scale(1, m.sy)
+      g.strokeText(L.ch, 0, 0)
+      g.restore()
+    }
+  }
+  fn renderFront() {
+    let m = world
+    let f = m.front
+    f.width = Math.round(m.w * m.dpr)
+    f.height = Math.round(m.h * m.dpr)
+    let g = f.getContext("2d")
+    g.setTransform(m.dpr, 0, 0, m.dpr, 0, 0)
+    // the city mirrored in the wet street, fading with distance
+    g.save()
+    g.globalAlpha = 0.17
+    g.translate(0, m.ground * 2 + 3)
+    g.scale(1, -1)
+    paintCity(g)
+    g.restore()
+    g.save()
+    g.globalCompositeOperation = "destination-out"
+    let fade = g.createLinearGradient(0, m.ground, 0, m.ground + m.cap * 0.9)
+    fade.addColorStop(0, "rgba(0, 0, 0, 0.1)")
+    fade.addColorStop(1, "rgba(0, 0, 0, 1)")
+    g.fillStyle = fade
+    g.fillRect(0, m.ground, m.w, m.h - m.ground)
+    g.restore()
+    paintCity(g)
+    g.fillStyle = "rgba(150, 180, 255, 0.16)"
+    g.fillRect(0, m.ground, m.w, 1)
+  }
+  // Sky, a hazy skyline far behind the letters, and the street.
+  fn renderBack() {
+    let m = world
+    let b = m.back
+    b.width = m.w
+    b.height = m.h
+    let g = b.getContext("2d")
+    let air = g.createLinearGradient(0, 0, 0, m.ground)
+    air.addColorStop(0, "#03050b")
+    air.addColorStop(0.55, "#080d1c")
+    air.addColorStop(1, "#161b36")
+    g.fillStyle = air
+    g.fillRect(0, 0, m.w, m.ground + 1)
+    let glow = g.createRadialGradient(m.w / 2, m.ground, 0, m.w / 2, m.ground, Math.max(m.w, m.h) * 0.7)
+    glow.addColorStop(0, "rgba(115, 120, 210, 0.18)")
+    glow.addColorStop(1, "rgba(115, 120, 210, 0)")
+    g.fillStyle = glow
+    g.fillRect(0, 0, m.w, m.ground)
+    let x = -10
+    let k = 0
+    while x < m.w + 10 {
+      k++
+      let behindName = x > m.letters[0].x - m.cap * 0.3 && x < m.letters[m.letters.length - 1].x + m.cap * 0.6
+      let bw = m.cap * (0.16 + hash(k * 2.3) * 0.34)
+      let bh = m.cap * (behindName ? 0.12 + hash(k * 4.1) * 0.38 : 0.2 + hash(k * 4.1) * 0.62)
+      g.fillStyle = "#060914"
+      g.fillRect(x, m.ground - bh, bw, bh)
+      g.fillStyle = "rgba(255, 200, 130, 0.16)"
+      for (let j = 0; j < 6; j++) {
+        if hash(k * 13.1 + j) < 0.45 {
+          g.fillRect(x + 3 + hash(k + j * 2.7) * (bw - 6), m.ground - bh + 4 + hash(k * 5 + j) * (bh - 8), 1.5, 2)
+        }
+      }
+      x += bw + m.cap * hash(k * 9.7) * 0.05
+    }
+    let haze = g.createLinearGradient(0, m.ground - m.cap * 1.1, 0, m.ground)
+    haze.addColorStop(0, "rgba(50, 60, 110, 0)")
+    haze.addColorStop(1, "rgba(60, 72, 130, 0.14)")
+    g.fillStyle = haze
+    g.fillRect(0, m.ground - m.cap * 1.1, m.w, m.cap * 1.1)
+    let street = g.createLinearGradient(0, m.ground, 0, m.h)
+    street.addColorStop(0, "#0c1122")
+    street.addColorStop(0.35, "#070a15")
+    street.addColorStop(1, "#04050a")
+    g.fillStyle = street
+    g.fillRect(0, m.ground, m.w, m.h - m.ground)
+  }
+  // ---------- rain ----------
+  fn respawn(drop, anywhere) {
+    let d = drop
+    let m = world
+    d.vy = rnd(900, 1300)
+    d.vx = d.vy * m.wind
+    d.k = rnd(0.012, 0.022)
+    d.bright = Math.random() < 0.3
+    d.x = rnd(-m.w * 0.12, m.w * 1.02)
+    d.y = anywhere ? rnd(-m.h, m.h) : rnd(-90, -10)
+    if anywhere && (solid(d.x, d.y) || d.y > m.ground) {
+      d.y = rnd(-m.h * 0.5, m.nameTop - 20)
+    }
+    d.floor = rnd(m.ground + 4, m.h + 30)
+  }
+  fn respawnFar(drop, anywhere) {
+    let d = drop
+    let m = world
+    d.vy = rnd(520, 760)
+    d.k = rnd(0.01, 0.016)
+    d.x = rnd(-m.w * 0.12, m.w * 1.02)
+    d.y = anywhere ? rnd(-m.h * 0.3, m.ground) : rnd(-60, -10)
+    d.floor = rnd(m.ground - m.cap * 0.9, m.ground + 2)
+  }
+  fn fillRain() {
+    let m = world
+    let near = Math.round(clamp(m.w * m.h / 2600, 140, 520) * m.quality)
+    while m.rain.length < near {
+      let d = {}
+      respawn(d, true)
+      m.rain.push(d)
+    }
+    while m.rain.length > near {
+      m.rain.pop()
+    }
+    while m.far.length < Math.round(near * 0.55) {
+      let d = {}
+      respawnFar(d, true)
+      m.far.push(d)
+    }
+    while m.far.length > Math.round(near * 0.55) {
+      m.far.pop()
+    }
+  }
+  // A drop breaks into a few droplets: the velocity relative to the surface is reflected with
+  // restitution `e`, spread along the tangent, plus the surface's own velocity (a moving umbrella).
+  fn splash(x, y, vx, vy, nx, ny, svx, svy, e, floor) {
+    let m = world
+    let rvx = vx - svx
+    let rvy = vy - svy
+    let vn = Math.min(rvx * nx + rvy * ny, -60)
+    let bx = rvx - (1 + e) * vn * nx
+    let by = rvy - (1 + e) * vn * ny
+    let tx = -ny
+    let ty = nx
+    let count = m.bits.length > m.maxBits ? 1 : 2 + Math.floor(Math.random() * 3)
+    for (let k = 0; k < count; k++) {
+      let s = rnd(0.12, 0.55)
+      let side = rnd(-1, 1) * Math.abs(vn) * 0.2
+      let up = rnd(20, 110)
+      m.bits.push({
+        x: x + nx * 1.2,
+        y: y + ny * 1.2,
+        vx: bx * s + tx * side + nx * up + svx,
+        vy: by * s + ty * side + ny * up + svy,
+        life: rnd(0.35, 0.9),
+        r: rnd(0.7, 1.5),
+        bounce: 0,
+        floor
+      })
+    }
+    if m.marks.length < 160 {
+      m.marks.push({ x, y, tx, ty, life: 0.09, len: rnd(1.5, 4) })
+    }
+  }
+  fn ripple(x, y) {
+    let m = world
+    if m.ripples.length < 240 && Math.random() < 0.65 {
+      let depth = (y - m.ground) / Math.max(1, m.h - m.ground)
+      m.ripples.push({ x, y, r: 0.5, max: 2.5 + depth * 8, life: 1 })
+      if Math.random() < 0.3 {
+        m.bits.push({ x, y: y - 0.5, vx: rnd(-40, 40), vy: -rnd(50, 140), life: 0.5, r: 0.9, bounce: 1, floor: y + 0.5 })
+      }
+    }
+  }
+  // Walks the segment a drop moved this frame, so fast drops can't skip a thin stroke.
+  fn rainVsCity(d, px, py) {
+    let dx = d.x - px
+    let dy = d.y - py
+    let steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 2.2))
+    let lastX = px
+    let lastY = py
+    for (let k = 1; k <= steps; k++) {
+      let x = px + dx * k / steps
+      let y = py + dy * k / steps
+      if solid(x, y) {
+        let n = normalAt(x, y)
+        splash(lastX, lastY, d.vx, d.vy, n.x, n.y, 0, 0, 0.26, world.ground + rnd(1, 5))
+        return true
+      }
+      lastX = x
+      lastY = y
+    }
+    return false
+  }
+  fn moveBit(bit, dt) {
+    let b = bit
+    let m = world
+    b.life -= dt
+    if b.life <= 0 {
+      return false
+    }
+    let px = b.x
+    let py = b.y
+    b.vy += 1700 * dt
+    b.x += b.vx * dt
+    b.y += b.vy * dt
+    if hitUmbrella(b, false) == 2 {
+      return true
+    }
+    if b.y > m.maskTop && solid(b.x, b.y) {
+      let n = normalAt(b.x, b.y)
+      let vn = b.vx * n.x + b.vy * n.y
+      if b.bounce < 1 && vn < -140 {
+        b.x = px
+        b.y = py
+        b.vx = (b.vx - 1.3 * vn * n.x) * 0.8
+        b.vy = (b.vy - 1.3 * vn * n.y) * 0.8
+        b.bounce++
+        return true
+      }
+      return false
+    }
+    if b.y >= b.floor {
+      if b.r > 1.2 && b.floor > m.ground + 3 {
+        ripple(b.x, b.floor)
+      }
+      return false
+    }
+    return b.x > -30 && b.x < m.w + 30
+  }
+  // ---------- the umbrella ----------
+  // 0: missed, 1: a raindrop splashed on it, 2: a droplet is resting or rolling on it.
+  fn hitUmbrella(target, isRain) {
+    let p = target
+    let u = world.u
+    let R = u.R
+    let dx = p.x - u.cx
+    let dy = p.y - u.cy
+    if dx * dx + dy * dy > R * R * 1.1 {
+      return 0
+    }
+    let ca = Math.cos(u.a)
+    let sa = Math.sin(u.a)
+    let lx = dx * ca + dy * sa
+    let ly = -dx * sa + dy * ca
+    let ry = R * 0.62
+    let f = lx * lx / (R * R) + ly * ly / (ry * ry)
+    if ly > R * 0.04 || f > 1 {
+      return 0
+    }
+    // outward normal of the ellipse, rotated back to the screen
+    let nlx = lx / (R * R)
+    let nly = ly / (ry * ry)
+    let nl = Math.hypot(nlx, nly) || 1
+    let nx = (nlx * ca - nly * sa) / nl
+    let ny = (nlx * sa + nly * ca) / nl
+    // move it out onto the canopy
+    let k = 1 / Math.sqrt(Math.max(f, 0.0001))
+    let sx = lx * k
+    let sy = Math.min(ly * k, 0)
+    p.x = u.cx + sx * ca - sy * sa + nx
+    p.y = u.cy + sx * sa + sy * ca + ny
+    if isRain {
+      splash(p.x, p.y, p.vx, p.vy, nx, ny, u.vx, u.vy, 0.22, dripFloor())
+      u.wet += 1
+      if u.held {
+        world.caught++
+      }
+      return 1
+    }
+    let rvx = p.vx - u.vx
+    let rvy = p.vy - u.vy
+    let vn = rvx * nx + rvy * ny
+    if vn < 0 {
+      let e = vn < -160 ? 0.3 : 0
+      p.vx = (rvx - (1 + e) * vn * nx) * 0.97 + u.vx
+      p.vy = (rvy - (1 + e) * vn * ny) * 0.97 + u.vy
+    }
+    p.life = Math.max(p.life, 0.4)
+    return 2
+  }
+  // Fast drops are tested at three points of their path against the canopy.
+  fn umbrellaSweep(drop, px, py) {
+    let d = drop
+    let x1 = d.x
+    let y1 = d.y
+    for (let k = 1; k <= 3; k++) {
+      d.x = px + (x1 - px) * k / 3
+      d.y = py + (y1 - py) * k / 3
+      if hitUmbrella(d, true) == 1 {
+        return true
+      }
+    }
+    d.x = x1
+    d.y = y1
+    return false
+  }
+  // Where water falling off the umbrella lands: at its feet when it's over the street.
+  fn dripFloor() {
+    let m = world
+    return m.u.y > m.ground ? m.u.y + rnd(0, 6) : m.ground + rnd(2, 10)
+  }
+  fn tip(i, n) {
+    let u = world.u
+    let lx = -u.R + i / n * 2 * u.R
+    return { x: u.cx + lx * Math.cos(u.a), y: u.cy + lx * Math.sin(u.a) }
+  }
+  fn moveUmbrella(dt) {
+    let m = world
+    let u = m.u
+    let tx = u.held ? m.pointer.x : u.homeX
+    let ty = u.held ? m.pointer.y : u.homeY
+    let follow = 1 - Math.exp(-(u.held ? 20 : 7) * dt)
+    let nx = u.x + (tx - u.x) * follow
+    let ny = u.y + (ty - u.y) * follow
+    if !u.held && Math.hypot(tx - nx, ty - ny) < 0.4 {
+      nx = tx
+      ny = ty
+    }
+    u.vx = clamp((nx - u.x) / dt, -3000, 3000)
+    u.vy = clamp((ny - u.y) / dt, -3000, 3000)
+    u.x = nx
+    u.y = ny
+    // a damped spring on the tilt: the canopy lags behind the hand, swings and settles
+    let target = clamp(-u.vx * 0.0007, -0.55, 0.55) + m.wind * 0.35 + (u.held ? 0 : Math.sin(m.t * 1.3) * 0.03)
+    u.av += ((target - u.a) * 70 - u.av * 10) * dt
+    u.a += u.av * dt
+    u.cx = u.x + Math.sin(u.a) * u.R * 1.3
+    u.cy = u.y - Math.cos(u.a) * u.R * 1.3
+    // water rolls off the rim, and flies off when it's shaken
+    if u.wet > 0 {
+      m.uDrip += dt * Math.min(28, 3 + u.wet * 0.2)
+      while m.uDrip >= 1 {
+        m.uDrip -= 1
+        let order = [0, 6, 0, 6, 1, 5, 2, 4, 3]
+        let p = tip(order[Math.floor(Math.random() * order.length)], 6)
+        m.bits.push({
+          x: p.x,
+          y: p.y + 1,
+          vx: u.vx * 0.4 + rnd(-10, 10),
+          vy: Math.max(u.vy * 0.4, 0) + rnd(10, 40),
+          life: 2.5,
+          r: rnd(1.1, 1.6),
+          bounce: 0,
+          floor: dripFloor()
+        })
+        u.wet = Math.max(0, u.wet - 2)
+      }
+      if Math.hypot(u.vx, u.vy) > 700 && u.wet > 3 {
+        for (let i = 0; i < 2; i++) {
+          let p = tip(Math.random() < 0.5 ? 0 : 6, 6)
+          m.bits.push({
+            x: p.x,
+            y: p.y,
+            vx: u.vx * rnd(0.5, 0.9) + rnd(-60, 60),
+            vy: u.vy * rnd(0.5, 0.9) - rnd(0, 80),
+            life: 1.6,
+            r: rnd(1, 1.5),
+            bounce: 0,
+            floor: dripFloor()
+          })
+        }
+        u.wet -= 2
+      }
+    }
+  }
+  fn placeUmbrellaHome() {
+    let m = world
+    let u = m.u
+    let L = m.letters[1]
+    u.R = m.R
+    u.homeX = (L.roof.x0 + L.roof.x1) / 2
+    u.homeY = L.roof.y + 1
+    if !u.held {
+      u.x = u.homeX
+      u.y = u.homeY
+    }
+    cta = { x: Math.round(u.homeX + u.R * 2.05), y: Math.round(u.homeY - u.R * 2.65), show: !u.held && !m.reduced }
+  }
+  fn overUmbrella(x, y) {
+    let u = world.u
+    let dx = x - u.cx
+    let dy = y - u.cy
+    let lx = dx * Math.cos(u.a) + dy * Math.sin(u.a)
+    let ly = -dx * Math.sin(u.a) + dy * Math.cos(u.a)
+    let R = u.R * 1.15
+    let canopy = lx * lx / (R * R) + ly * ly / (R * R * 0.45) <= 1 && ly <= u.R * 0.15
+    let shaft = Math.abs(lx) < 14 && ly > 0 && ly < u.R * 1.4
+    return canopy || shaft
+  }
+  fn grab(x, y) {
+    let m = world
+    if !m || !m.ready || m.reduced {
+      return
+    }
+    m.u.held = true
+    m.pointer = { x, y }
+    m.caught = 0
+    stopped = 0
+    holding = true
+    cta = { x: cta.x, y: cta.y, show: false }
+    document.documentElement.classList.add("holding")
+  }
+  fn release() {
+    let m = world
+    m.u.held = false
+    holding = false
+    stopped = m.caught
+    if m.caught > best {
+      best = m.caught
+      try {
+        localStorage.setItem("lb-best", String(best))
+      } catch (e) {
+      }
+    }
+    document.documentElement.classList.remove("holding")
+  }
+  fn grabFromButton() {
+    let u = world.u
+    grab(u.x, u.y - u.R * 0.6)
+  }
+  fn local(e) {
+    return { x: e.clientX - world.left, y: e.clientY - world.top }
+  }
+  fn onDown(e) {
+    let m = world
+    if !m || !m.ready {
+      return
+    }
+    let p = local(e)
+    if !m.u.held {
+      if overUmbrella(p.x, p.y) {
+        e.preventDefault()
+        grab(p.x, p.y)
+      }
+    } else if e.pointerType == "mouse" {
+      release()
+    } else {
+      m.pointer = p
+    }
+  }
+  fn onMove(e) {
+    let m = world
+    if !m || !m.ready {
+      return
+    }
+    let p = local(e)
+    if m.u.held && (e.pointerType == "mouse" || e.buttons > 0) {
+      m.pointer = p
+    }
+    if !m.u.held {
+      sky.style.cursor = overUmbrella(p.x, p.y) ? "grab" : ""
+    }
+  }
+  fn onKey(e) {
+    let m = world
+    if !m || !m.u.held {
+      return
+    }
+    if e.key == "Escape" {
+      release()
+    }
+    let step = 36
+    let moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }
+    let mv = moves[e.key]
+    if mv {
+      e.preventDefault()
+      m.pointer = { x: clamp(m.pointer.x + mv[0], 0, m.w), y: clamp(m.pointer.y + mv[1], 0, m.h) }
+    }
+  }
+  // ---------- the frame ----------
+  fn simulate(dt) {
+    let m = world
+    let u = m.u
+    m.t += dt
+    m.wind = 0.11 + 0.05 * Math.sin(m.t * 0.23) + 0.025 * Math.sin(m.t * 1.07 + 1.3)
+    // the Chip's "put it back" button only flips the state
+    if u.held && !holding {
+      release()
+    }
+    moveUmbrella(dt)
+    for d in m.far {
+      d.y += d.vy * dt
+      d.x += d.vy * m.wind * dt
+      if d.y > d.floor {
+        respawnFar(d, false)
+      }
+    }
+    for d in m.rain {
+      let px = d.x
+      let py = d.y
+      d.vx += (d.vy * m.wind - d.vx) * Math.min(1, dt * 3)
+      d.x += d.vx * dt
+      d.y += d.vy * dt
+      let done = umbrellaSweep(d, px, py)
+      if !done && d.y > m.maskTop {
+        done = rainVsCity(d, px, py)
+      }
+      if !done && d.y >= d.floor {
+        ripple(d.x, d.floor)
+        done = true
+      }
+      if done || d.x > m.w + 40 {
+        respawn(d, false)
+      }
+    }
+    // water dripping off the ledges of the letters
+    m.ledgeDrip += dt * m.letters.length * 0.7
+    while m.ledgeDrip >= 1 && m.ledges.length > 0 {
+      m.ledgeDrip -= 1
+      let l = m.ledges[Math.floor(Math.random() * m.ledges.length)]
+      m.bits.push({ x: l.x, y: l.y, vx: 0, vy: rnd(5, 30), life: 3, r: rnd(1.1, 1.5), bounce: 0, floor: m.ground + rnd(1, 4) })
+    }
+    let i = 0
+    while i < m.bits.length {
+      if moveBit(m.bits[i], dt) {
+        i++
+      } else {
+        m.bits[i] = m.bits[m.bits.length - 1]
+        m.bits.pop()
+      }
+    }
+    i = 0
+    while i < m.ripples.length {
+      let rp = m.ripples[i]
+      rp.life -= dt * 2.3
+      rp.r += (rp.max - rp.r) * Math.min(1, dt * 7)
+      if rp.life > 0 {
+        i++
+      } else {
+        m.ripples[i] = m.ripples[m.ripples.length - 1]
+        m.ripples.pop()
+      }
+    }
+    i = 0
+    while i < m.marks.length {
+      m.marks[i].life -= dt
+      if m.marks[i].life > 0 {
+        i++
+      } else {
+        m.marks[i] = m.marks[m.marks.length - 1]
+        m.marks.pop()
+      }
+    }
+    // a soft, rare lightning: two pulses and a bolt behind the buildings
+    if m.t > m.nextBolt {
+      m.nextBolt = m.t + rnd(16, 34)
+      m.flash = 1
+      m.pulse = m.t + 0.16
+      m.bolt = makeBolt()
+      m.boltLife = 0.3
+    }
+    if m.pulse > 0 && m.t > m.pulse {
+      m.flash = 0.7
+      m.pulse = 0
+    }
+    m.flash = Math.max(0, m.flash - dt * 3.2)
+    m.boltLife -= dt
+    // a window turns on or off now and then
+    if m.t > m.nextFlicker && m.windows.length > 0 {
+      m.nextFlicker = m.t + rnd(2, 4)
+      let w = m.windows[Math.floor(Math.random() * m.windows.length)]
+      w.on = !w.on
+      renderFront()
+    }
+    let home = !u.held && Math.hypot(u.x - u.homeX, u.y - u.homeY) < 3
+    m.ctaFade = clamp(m.ctaFade + (home ? dt * 2.5 : -dt * 6), 0, 1)
+    if home != cta.show {
+      cta = { x: cta.x, y: cta.y, show: home }
+    }
+    if u.held && m.caught != stopped && m.t - m.lastSync > 0.15 {
+      stopped = m.caught
+      m.lastSync = m.t
+    }
+  }
+  fn makeBolt() {
+    let m = world
+    let pts = []
+    let x = rnd(m.w * 0.15, m.w * 0.85)
+    let y = -10
+    let end = m.ground - m.cap * rnd(0.4, 0.9)
+    while y < end {
+      pts.push({ x, y })
+      x += rnd(-22, 22)
+      y += rnd(14, 34)
+    }
+    pts.push({ x, y: end })
+    return pts
+  }
+  fn draw() {
+    let m = world
+    let c = m.ctx
+    c.setTransform(m.dpr, 0, 0, m.dpr, 0, 0)
+    c.drawImage(m.back, 0, 0, m.w, m.h)
+    if m.boltLife > 0 {
+      c.strokeStyle = `rgba(215, 225, 255, ${m.boltLife * 2.6})`
+      c.lineWidth = 1.6
+      c.beginPath()
+      c.moveTo(m.bolt[0].x, m.bolt[0].y)
+      for p in m.bolt {
+        c.lineTo(p.x, p.y)
+      }
+      c.stroke()
+    }
+    c.strokeStyle = "rgba(150, 175, 230, 0.17)"
+    c.lineWidth = 1
+    c.beginPath()
+    for d in m.far {
+      c.moveTo(d.x, d.y)
+      c.lineTo(d.x - d.vy * m.wind * d.k, d.y - d.vy * d.k)
+    }
+    c.stroke()
+    c.drawImage(m.front, 0, 0, m.w, m.h)
+    for p in m.props {
+      if p.light {
+        let on = Math.max(0, 1 - (m.t + p.phase) % 2.2 / 0.7)
+        if on > 0 {
+          c.fillStyle = `rgba(255, 60, 70, ${0.22 * on})`
+          c.beginPath()
+          c.arc(p.x, p.y - p.h, 7, 0, Math.PI * 2)
+          c.fill()
+          c.fillStyle = `rgba(255, 105, 105, ${on})`
+          c.beginPath()
+          c.arc(p.x, p.y - p.h, 1.8, 0, Math.PI * 2)
+          c.fill()
+        }
+      }
+    }
+    c.lineWidth = 0.8
+    for rp in m.ripples {
+      c.strokeStyle = `rgba(170, 195, 255, ${rp.life * 0.32})`
+      c.beginPath()
+      c.ellipse(rp.x, rp.y, rp.r, rp.r * 0.28, 0, 0, Math.PI * 2)
+      c.stroke()
+    }
+    c.lineWidth = 1
+    c.strokeStyle = "rgba(180, 202, 255, 0.3)"
+    c.beginPath()
+    for d in m.rain {
+      if !d.bright {
+        c.moveTo(d.x, d.y)
+        c.lineTo(d.x - d.vx * d.k, d.y - d.vy * d.k)
+      }
+    }
+    c.stroke()
+    c.lineWidth = 1.3
+    c.strokeStyle = "rgba(205, 220, 255, 0.5)"
+    c.beginPath()
+    for d in m.rain {
+      if d.bright {
+        c.moveTo(d.x, d.y)
+        c.lineTo(d.x - d.vx * d.k, d.y - d.vy * d.k)
+      }
+    }
+    c.stroke()
+    c.fillStyle = "rgba(210, 225, 255, 0.78)"
+    c.beginPath()
+    for b in m.bits {
+      c.rect(b.x - b.r / 2, b.y - b.r / 2, b.r, b.r)
+    }
+    c.fill()
+    c.strokeStyle = "rgba(225, 235, 255, 0.55)"
+    c.lineWidth = 1
+    c.beginPath()
+    for k in m.marks {
+      c.moveTo(k.x - k.tx * k.len, k.y - k.ty * k.len)
+      c.lineTo(k.x + k.tx * k.len, k.y + k.ty * k.len)
+    }
+    c.stroke()
+    drawUmbrella(c)
+    drawArrow(c)
+    if m.flash > 0 {
+      c.fillStyle = `rgba(190, 205, 255, ${m.flash * 0.1})`
+      c.fillRect(0, 0, m.w, m.h)
+    }
+  }
+  fn drawUmbrella(layer) {
+    let c = layer
+    let u = world.u
+    let R = u.R
+    let ry = R * 0.62
+    let lw = Math.max(1.5, R * 0.04)
+    let n = 6
+    c.save()
+    c.translate(u.x, u.y)
+    c.rotate(u.a)
+    c.lineCap = "round"
+    c.strokeStyle = "#c9ced8"
+    c.lineWidth = lw
+    c.beginPath()
+    c.moveTo(0, -R * 1.3)
+    c.lineTo(0, -R * 0.3)
+    c.stroke()
+    // the hooked handle
+    c.strokeStyle = "#4a2c1c"
+    c.lineWidth = lw * 2.3
+    c.beginPath()
+    c.moveTo(0, -R * 0.36)
+    c.lineTo(0, -R * 0.15)
+    c.arc(-R * 0.14, -R * 0.15, R * 0.14, 0, Math.PI, false)
+    c.stroke()
+    c.translate(0, -R * 1.3)
+    // the scalloped canopy
+    c.beginPath()
+    c.moveTo(-R, 0)
+    c.ellipse(0, 0, R, ry, 0, Math.PI, Math.PI * 2, false)
+    for (let i = n; i > 0; i--) {
+      let x0 = -R + i / n * 2 * R
+      let x1 = -R + (i - 1) / n * 2 * R
+      c.quadraticCurveTo((x0 + x1) / 2, -ry * 0.16, x1, 0)
+    }
+    c.closePath()
+    let grad = c.createLinearGradient(-R, -ry, R * 0.6, ry * 0.2)
+    grad.addColorStop(0, "#ff6b7a")
+    grad.addColorStop(0.45, "#e5304a")
+    grad.addColorStop(1, "#9c1430")
+    c.fillStyle = grad
+    c.fill()
+    c.save()
+    c.clip()
+    c.fillStyle = "rgba(60, 0, 20, 0.2)"
+    for (let i = 1; i < n; i += 2) {
+      let x0 = -R + i / n * 2 * R
+      let x1 = -R + (i + 1) / n * 2 * R
+      c.beginPath()
+      c.moveTo(0, -ry)
+      c.quadraticCurveTo(x0 * 0.9, -ry * 0.85, x0, 0)
+      c.lineTo(x1, 0)
+      c.quadraticCurveTo(x1 * 0.9, -ry * 0.85, 0, -ry)
+      c.fill()
+    }
+    c.strokeStyle = "rgba(255, 255, 255, 0.3)"
+    c.lineWidth = 1.5
+    c.beginPath()
+    c.ellipse(0, 0, R * 0.82, ry * 0.8, 0, Math.PI * 1.12, Math.PI * 1.42)
+    c.stroke()
+    c.restore()
+    c.strokeStyle = "rgba(70, 0, 20, 0.45)"
+    c.lineWidth = 1
+    c.beginPath()
+    for (let i = 1; i < n; i++) {
+      let x = -R + i / n * 2 * R
+      c.moveTo(0, -ry)
+      c.quadraticCurveTo(x * 0.9, -ry * 0.85, x, 0)
+    }
+    c.stroke()
+    c.strokeStyle = "#c9ced8"
+    c.lineWidth = lw
+    c.beginPath()
+    c.moveTo(0, -ry)
+    c.lineTo(0, -ry - R * 0.14)
+    c.stroke()
+    c.fillStyle = "#d7dbe4"
+    for (let i = 0; i <= n; i++) {
+      c.beginPath()
+      c.arc(-R + i / n * 2 * R, 0, lw * 0.7, 0, Math.PI * 2)
+      c.fill()
+    }
+    c.restore()
+  }
+  // A hand-drawn arrow from the "Grab the umbrella" note to the canopy.
+  fn drawArrow(layer) {
+    let c = layer
+    let m = world
+    let u = m.u
+    if m.ctaFade <= 0.01 {
+      return
+    }
+    let wobble = Math.sin(m.t * 3) * 2.5
+    let sx = cta.x - 8
+    let sy = cta.y + 12
+    let ex = u.cx + u.R * 1.1 + wobble * 0.6
+    let ey = u.cy - u.R * 0.42 + wobble * 0.4
+    c.save()
+    c.strokeStyle = `rgba(236, 240, 255, ${0.8 * m.ctaFade})`
+    c.lineWidth = 1.6
+    c.lineCap = "round"
+    c.lineJoin = "round"
+    c.beginPath()
+    c.moveTo(sx, sy)
+    let qx = ex + (sx - ex) * 0.1
+    let qy = sy
+    c.quadraticCurveTo(qx, qy, ex, ey)
+    let ang = Math.atan2(ey - qy, ex - qx)
+    c.moveTo(ex, ey)
+    c.lineTo(ex - Math.cos(ang - 0.5) * 9, ey - Math.sin(ang - 0.5) * 9)
+    c.moveTo(ex, ey)
+    c.lineTo(ex - Math.cos(ang + 0.5) * 9, ey - Math.sin(ang + 0.5) * 9)
+    c.stroke()
+    c.restore()
+  }
+  fn step(now) {
+    let m = world
+    m.raf = requestAnimationFrame(step)
+    let dt = m.last == 0 ? 0.016 : Math.min(0.033, Math.max(0.001, (now - m.last) / 1000))
+    m.last = now
+    // slow device: fewer drops (at most twice)
+    if dt > 0.026 {
+      m.slow++
+    } else {
+      m.slow = Math.max(0, m.slow - 1)
+    }
+    if m.slow > 90 && m.quality > 0.5 {
+      m.quality *= 0.7
+      m.slow = 0
+      fillRain()
+    }
+    simulate(dt)
+    draw()
+  }
+  fn rebuild() {
+    let m = world
+    layout()
+    document.documentElement.style.setProperty("--ground", `${m.ground}px`)
+    buildMask()
+    planWindows()
+    renderBack()
+    renderFront()
+    placeUmbrellaHome()
+    m.rain = []
+    m.far = []
+    m.bits = []
+    m.ripples = []
+    m.marks = []
+    fillRain()
+    m.ready = true
+    m.lang = lang
+    if m.reduced {
+      m.ctaFade = 0
+      draw()
+    }
+  }
+  // The pills change width with the language: rebuild the collision map once they did.
+  effect {
+    if world && world.ready && world.lang != lang {
+      world.lang = lang
+      setTimeout(buildMask, 60)
+    }
+  }
+  mount {
+    let ctx = sky.getContext ? sky.getContext("2d") : null
+    if !ctx {
+      return
+    }
+    world = {
+      ctx,
+      back: document.createElement("canvas"),
+      front: document.createElement("canvas"),
+      ready: false,
+      reduced: window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false,
+      t: 0,
+      last: 0,
+      raf: 0,
+      slow: 0,
+      quality: 1,
+      wind: 0.12,
+      rain: [],
+      far: [],
+      bits: [],
+      ripples: [],
+      marks: [],
+      props: [],
+      windows: [],
+      ledges: [],
+      letters: [],
+      maxBits: 900,
+      pointer: { x: 0, y: 0 },
+      u: { x: 0, y: 0, vx: 0, vy: 0, a: 0, av: 0, R: 50, cx: 0, cy: 0, held: false, wet: 0, homeX: 0, homeY: 0 },
+      caught: 0,
+      lastSync: 0,
+      ledgeDrip: 0,
+      uDrip: 0,
+      flash: 0,
+      pulse: 0,
+      nextBolt: 7,
+      bolt: [],
+      boltLife: 0,
+      nextFlicker: 3,
+      ctaFade: 0,
+      lang: "",
+      resizeTimer: 0
+    }
+    try {
+      best = Number(localStorage.getItem("lb-best") || 0)
+    } catch (e) {
+    }
+    let onResize = () => {
+      clearTimeout(world.resizeTimer)
+      world.resizeTimer = setTimeout(rebuild, 120)
+    }
+    window.addEventListener("resize", onResize)
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("keydown", onKey)
+    cleanup {
+      cancelAnimationFrame(world.raf)
+      clearTimeout(world.resizeTimer)
+      window.removeEventListener("resize", onResize)
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("keydown", onKey)
+      document.documentElement.classList.remove("holding")
+    }
+    try {
+      await document.fonts.load("900 100px \"Big Shoulders Display\"")
+    } catch (e) {
+    }
+    rebuild()
+    document.fonts.ready.then(() => buildMask())
+    if !world.reduced {
+      world.raf = requestAnimationFrame(step)
+    }
+  }
+
+  canvas ref=sky class="sky" aria-hidden="true" on:pointerdown=onDown(event)
+  button class=(cta.show ? "umbrella-cta show" : "umbrella-cta") style=`left:${cta.x}px;top:${cta.y}px;--x:${cta.x}px` aria-hidden=!cta.show disabled=!cta.show -> grabFromButton() {
+    text t("grab") class="cta-main"
+    text t("grabHint") class="cta-sub"
+  }
+}
